@@ -26,24 +26,50 @@ const registerStudent = async (req, res) => {
   };
 // Student login
 const studentLogin = async (req, res) => {
-    try {
-      const { email: studentEmail, password } = req.body;
-  
-      // Check if the student exists and the password is correct
-      const student = await Student.findOne({ email: studentEmail });
-      if (!student || student.password !== password) {
-        return res.status(401).json({ message: 'Invalid email or password' });
-      }
-  
-      // Return the email and name of the student
-      const { email, name } = student;
-      res.json({ email, name });
-    } catch (error) {
-      console.error('Error during student login:', error);
-      res.status(500).json({ message: 'An error occurred during student login' });
+  try {
+    const { email: studentEmail, password } = req.body;
+
+    // Check if the student exists and the password is correct
+    const student = await Student.findOne({ email: studentEmail });
+    if (!student || student.password !== password) {
+      return res.status(401).json({ message: "Invalid email or password" });
     }
-  };
-  
+
+    // Return the email, name, and ID of the student
+    const { email, name, _id } = student;
+    res.json({ email, name, id: _id });
+  } catch (error) {
+    console.error("Error during student login:", error);
+    res.status(500).json({ message: "An error occurred during student login" });
+  }
+};
+
+// Controller function to update a student
+const updateStudent = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+    const student = await Student.findByIdAndUpdate(
+      req.params.id,
+      { name, password,email },
+      { new: true }
+    );
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Update email if a new email is provided
+    if (email && email !== student.email) {
+      student.email = email;
+      await student.save();
+    }
+
+    res.json(student);
+  } catch (error) {
+    res.status(500).json({ message: "Error updating student" });
+  }
+};
+
   
 // Controller function to get all students
 const getAllStudents = async (req, res) => {
@@ -93,19 +119,6 @@ const createStudent = async (req, res) => {
   };
   
 
-// Controller function to update a student
-const updateStudent = async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    const student = await Student.findByIdAndUpdate(req.params.id, { name, email, password }, { new: true });
-    if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
-    }
-    res.json(student);
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating student' });
-  }
-};
 
 // Controller function to delete a student
 const deleteStudent = async (req, res) => {
