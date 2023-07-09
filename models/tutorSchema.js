@@ -49,7 +49,6 @@ const tutorSchema = new mongoose.Schema({
   },
   currentTeachInstitute: {
     type: String,
-    required: true,
   },
   alumni: {
     type: String,
