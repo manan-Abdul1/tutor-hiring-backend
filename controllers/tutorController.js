@@ -65,6 +65,26 @@ const registerTutor = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Student login
+const tutorsLogin = async (req, res) => {
+  try {
+    const { email: studentEmail, password } = req.body;
+
+    // Check if the student exists and the password is correct
+    const student = await Student.findOne({ email: studentEmail });
+    if (!student || student.password !== password) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+
+    // Return the email, name, and ID of the student
+    const { email, name, _id } = student;
+    res.json({ email, name, id: _id });
+  } catch (error) {
+    console.error("Error during student login:", error);
+    res.status(500).json({ message: "An error occurred during student login" });
+  }
+};
+
 
 
 module.exports = {
