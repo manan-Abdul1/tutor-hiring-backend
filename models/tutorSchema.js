@@ -62,10 +62,10 @@ const tutorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  language: {
-    type: String,
-    required: true,
-  },
+  // language: {
+  //   type: String,
+  //   required: true,
+  // },
   classes: {
     type: [String],
     required: true,
