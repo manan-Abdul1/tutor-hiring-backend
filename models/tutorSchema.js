@@ -23,10 +23,6 @@ const tutorSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  confirmPassword: {
-    type: String,
-    required: true,
-  },
   address: {
     type: String,
     required: true,
