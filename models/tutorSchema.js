@@ -87,6 +87,10 @@ const tutorSchema = new mongoose.Schema({
     enum: ['physical', 'online', 'both'],
     required: true,
   },
+  role: {
+    type: String,
+    default: 'tutor',
+  },
 });
 
 const Tutor = mongoose.model('Tutor', tutorSchema);

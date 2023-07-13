@@ -13,7 +13,11 @@ const studentSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
-  }
+  },
+  role: {
+    type: String,
+    default: 'user',
+  },
 });
 
 const Student = mongoose.model('Student', studentSchema);

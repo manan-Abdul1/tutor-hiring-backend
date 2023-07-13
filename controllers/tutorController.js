@@ -55,6 +55,7 @@ const registerTutor = async (req, res) => {
       allSubjectFee,
       perSubjectFee,
       location,
+      role: 'tutor'
     });
 
     // Save the tutor to the database
@@ -84,8 +85,8 @@ const tutorsLogin = async (req, res) => {
     }
 
     // Return the tutor details
-    const { name, email: tutorEmail, _id } = tutor;
-    res.json({ tutor: { name, email: tutorEmail, id: _id } });
+    const { name, email: tutorEmail, _id, role } = tutor;
+    res.json({ name, email: tutorEmail, id: _id , role });
   } catch (error) {
     console.error('Error during tutor login:', error);
     res.status(500).json({ message: 'An error occurred during tutor login' });
