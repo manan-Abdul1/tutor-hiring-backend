@@ -91,6 +91,10 @@ const tutorSchema = new mongoose.Schema({
     type: String,
     default: 'tutor',
   },
+  profileImageUrl: {
+    type : String ,
+    required: false
+  }
 });
 
 const Tutor = mongoose.model('Tutor', tutorSchema);

@@ -8,7 +8,6 @@ const registerTutor = async (req, res) => {
       email,
       cnic,
       password,
-      confirmPassword,
       address,
       gender,
       age,

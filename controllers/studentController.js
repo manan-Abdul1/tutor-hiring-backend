@@ -2,28 +2,29 @@ const Student = require('../models/studentSchema');
 
 // Register a new student
 const registerStudent = async (req, res) => {
-    try {
-      // Extract the registration data from the request body
-      const { name, email, password } = req.body;
-  
-      // Check if the student already exists
-      const existingStudent = await Student.findOne({ email });
-      if (existingStudent) {
-        return res.status(400).json({ message: 'Student already exists' });
-      }
-  
-      // Create a new student instance
-      const student = new Student({ name, email, password });
-  
-      // Save the student to the database
-      await student.save();
-  
-      res.status(201).json({ message: 'Student registered successfully' });
-    } catch (error) {
-      console.error('Error registering student:', error);
-      res.status(500).json({ message: 'An error occurred during student registration' });
+  try {
+    // Extract the registration data from the request body
+    const { name, email, password } = req.body;
+
+    // Check if the student already exists
+    const existingStudent = await Student.findOne({ email });
+    if (existingStudent) {
+      return res.status(500).json({ message: 'Student already exists', ok: false });
     }
-  };
+
+    // Create a new student instance
+    const student = new Student({ name, email, password, role });
+
+    // Save the student to the database
+    await student.save();
+
+    res.status(201).json({ message: 'Student registered successfully', ok: true });
+  } catch (error) {
+    console.error('Error registering student:', error);
+    res.status(500).json({ message: 'An error occurred during student registration', ok: false });
+  }
+};
+
 // Student login
 const studentLogin = async (req, res) => {
   try {
@@ -32,17 +33,18 @@ const studentLogin = async (req, res) => {
     // Check if the student exists and the password is correct
     const student = await Student.findOne({ email: studentEmail });
     if (!student || student.password !== password) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res.status(401).json({ message: "Invalid email or password", ok: false });
     }
 
     // Return the email, name, and ID of the student
-    const { email, name, _id } = student;
-    res.json({ email, name, id: _id });
+    const { email, name, _id, role } = student;
+    res.status(200).json({ email, name, id: _id, role, ok: true });
   } catch (error) {
     console.error("Error during student login:", error);
-    res.status(500).json({ message: "An error occurred during student login" });
+    res.status(500).json({ message: "An error occurred during student login", ok: false });
   }
 };
+
 
 // Controller function to update a student
 const updateStudent = async (req, res) => {
@@ -50,12 +52,12 @@ const updateStudent = async (req, res) => {
     const { name, email, password } = req.body;
     const student = await Student.findByIdAndUpdate(
       req.params.id,
-      { name, password,email },
+      { name, password, email },
       { new: true }
     );
 
     if (!student) {
-      return res.status(404).json({ message: "Student not found" });
+      return res.status(404).json({ message: "Student not found", ok: false });
     }
 
     // Update email if a new email is provided
@@ -64,20 +66,21 @@ const updateStudent = async (req, res) => {
       await student.save();
     }
 
-    res.json(student);
+    res.status(200).json({ student, ok: true });
   } catch (error) {
-    res.status(500).json({ message: "Error updating student" });
+    console.error("Error updating student:", error);
+    res.status(500).json({ message: "Error updating student", ok: false });
   }
 };
 
-  
 // Controller function to get all students
 const getAllStudents = async (req, res) => {
   try {
     const students = await Student.find();
-    res.json(students);
+    res.status(200).json({ students, ok: true });
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving students' });
+    console.error("Error retrieving students:", error);
+    res.status(500).json({ message: 'Error retrieving students', ok: false });
   }
 };
 
@@ -86,50 +89,51 @@ const getStudentById = async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: 'Student not found', ok: false });
     }
-    res.json(student);
+    res.status(200).json({ student, ok: true });
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving student' });
+    console.error("Error retrieving student:", error);
+    res.status(500).json({ message: 'Error retrieving student', ok: false });
   }
 };
 
+
 // Controller function to handle student registration
 const createStudent = async (req, res) => {
-    try {
-      const { name, email, password } = req.body;
-  
-      // Check if the student already exists
-      const existingStudent = await Student.findOne({ email });
-      if (existingStudent) {
-        return res.status(400).json({ message: 'Student already exists' });
-      }
-  
-      // Create a new student instance
-      const student = new Student({ name, email, password });
-  
-      // Save the student to the database
-      await student.save();
-  
-      res.status(201).json({ message: 'Student registered successfully' });
-    } catch (error) {
-      console.error('Error registering student:', error);
-      res.status(500).json({ message: 'An error occurred during student registration' });
-    }
-  };
-  
+  try {
+    const { name, email, password } = req.body;
 
+    // Check if the student already exists
+    const existingStudent = await Student.findOne({ email });
+    if (existingStudent) {
+      return res.status(400).json({ message: 'Student already exists', ok: false });
+    }
+
+    // Create a new student instance
+    const student = new Student({ name, email, password });
+
+    // Save the student to the database
+    await student.save();
+
+    res.status(201).json({ message: 'Student registered successfully', ok: true });
+  } catch (error) {
+    console.error('Error registering student:', error);
+    res.status(500).json({ message: 'An error occurred during student registration', ok: false });
+  }
+};
 
 // Controller function to delete a student
 const deleteStudent = async (req, res) => {
   try {
     const student = await Student.findByIdAndRemove(req.params.id);
     if (!student) {
-      return res.status(404).json({ message: 'Student not found' });
+      return res.status(404).json({ message: 'Student not found', ok: false });
     }
-    res.json({ message: 'Student deleted' });
+    res.status(200).json({ message: 'Student deleted', ok: true });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting student' });
+    console.error('Error deleting student:', error);
+    res.status(500).json({ message: 'Error deleting student', ok: false });
   }
 };
 
