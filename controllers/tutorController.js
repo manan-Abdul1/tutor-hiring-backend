@@ -79,7 +79,6 @@ const getTeacherById = async (req, res) => {
   }
 };
 
-
 // update teacher
 const updateTeacher = async (req, res) => {
   try {
