@@ -6,8 +6,6 @@ const studentRoutes = require('./routes/studentRoutes');
 const tutorRoutes = require('./routes/tutorRoutes');
 const dbconfig = require('./connection/db');
 
-
-
 const app = express();
 app.use(express.json());
 app.use(cors());

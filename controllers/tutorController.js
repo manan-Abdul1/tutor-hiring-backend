@@ -35,21 +35,19 @@ const tutorsLogin = async (req, res) => {
     const { email, password } = req.body;
 
     // Check if the tutor exists
-    const tutor = await Tutor.findOne({ email });
-
+    const existingTutor = await Tutor.findOne({ email });
     // If tutor is not found, return error
-    if (!tutor) {
-      return res.status(401).json({ message: 'Invalid email or password', ok: false, status: 401 });
+    if (!existingTutor) {
+      return res.status(401).json({ message: 'Tutor does not exist', ok: false, status: 401 });
     }
 
     // Compare the provided password with the stored password
-    if (tutor.password !== password) {
+    if (password !== existingTutor.password) {
       return res.status(401).json({ message: 'Invalid email or password', ok: false, status: 401 });
     }
-
+    const returningTutorData = await Tutor.findOne({ email }).select('-password');
     // Return the tutor details
-    const { name, email: tutorEmail, _id, role } = tutor;
-    res.json({ name, email: tutorEmail, id: _id, role, ok: true, status: 200 });
+    res.json({ tutor:returningTutorData, ok: true, status: 200 });
   } catch (error) {
     console.error('Error during tutor login:', error);
     res.status(500).json({ message: 'An error occurred during tutor login', ok: false, status: 500 });
@@ -59,7 +57,7 @@ const tutorsLogin = async (req, res) => {
 // get all teachers
 const getAllTeachers = async (req, res) => {
   try {
-    const teachers = await Tutor.find({ role: 'tutor' }); 
+    const teachers = await Tutor.find({ role: 'tutor' });
     res.status(200).json({ teachers, message: 'Teachers retrieved successfully', ok: true });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving teachers', ok: false });
