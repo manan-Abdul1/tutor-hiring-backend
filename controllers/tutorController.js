@@ -64,7 +64,15 @@ const getAllTeachers = async (req, res) => {
   }
 };
 
-
+// update teacher
+const updateTeacher = async (req, res) => {
+  try {
+    const teachers = await Tutor.find({ role: 'tutor' });
+    res.status(200).json({ teachers, message: 'Teachers retrieved successfully', ok: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Error retrieving teachers', ok: false });
+  }
+};
 
 
 module.exports = {
