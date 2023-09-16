@@ -36,9 +36,8 @@ const studentLogin = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password", ok: false });
     }
 
-    // Return the email, name, and ID of the student
-    const { email, name, _id, role } = student;
-    res.status(200).json({ email, name, id: _id, role, ok: true });
+
+    res.status(200).json({ student, ok: true });
   } catch (error) {
     console.error("Error during student login:", error);
     res.status(500).json({ message: "An error occurred during student login", ok: false });

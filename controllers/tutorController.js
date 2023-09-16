@@ -38,16 +38,16 @@ const tutorsLogin = async (req, res) => {
     const existingTutor = await Tutor.findOne({ email });
     // If tutor is not found, return error
     if (!existingTutor) {
-      return res.status(401).json({ message: 'Tutor does not exist', ok: false, status: 401 });
+      return res.status(401).json({ message: 'Tutor does not exist', ok: false });
     }
 
     // Compare the provided password with the stored password
     if (password !== existingTutor.password) {
-      return res.status(401).json({ message: 'Invalid email or password', ok: false, status: 401 });
+      return res.status(401).json({ message: 'Invalid email or password', ok: false });
     }
     const returningTutorData = await Tutor.findOne({ email }).select('-password');
     // Return the tutor details
-    res.json({ tutor:returningTutorData, ok: true, status: 200 });
+    res.json({ tutor:returningTutorData, ok: true });
   } catch (error) {
     console.error('Error during tutor login:', error);
     res.status(500).json({ message: 'An error occurred during tutor login', ok: false, status: 500 });
