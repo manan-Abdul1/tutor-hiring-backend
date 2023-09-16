@@ -3,30 +3,7 @@ const Tutor = require('../models/tutorSchema');
 //Register a Tutor
 const registerTutor = async (req, res) => {
   try {
-    const {
-      name,
-      phone,
-      email,
-      cnic,
-      password,
-      confirmPassword, 
-      address,
-      gender,
-      age,
-      timing,
-      experience,
-      currentTeachInstitute,
-      alumni,
-      education,
-      city,
-      bio,
-      language,
-      classes,
-      subjects,
-      allSubjectFee,
-      perSubjectFee,
-      location,
-    } = req.body;
+    const { email, password, confirmPassword } = req.body;
 
     // Check if the tutor with the same email already exists
     const existingTutor = await Tutor.findOne({ email });
@@ -40,30 +17,7 @@ const registerTutor = async (req, res) => {
     }
 
     // Create a new tutor
-    const tutor = new Tutor({
-      name,
-      phone,
-      email,
-      cnic,
-      password,
-      address,
-      gender,
-      age,
-      timing,
-      experience,
-      currentTeachInstitute,
-      alumni,
-      education,
-      city,
-      bio,
-      language,
-      classes,
-      subjects,
-      allSubjectFee,
-      perSubjectFee,
-      location,
-      role: 'tutor'
-    });
+    const tutor = new Tutor({ ...req.body, confirmPassword: undefined });
 
     // Save the tutor to the database
     await tutor.save();
@@ -95,7 +49,7 @@ const tutorsLogin = async (req, res) => {
 
     // Return the tutor details
     const { name, email: tutorEmail, _id, role } = tutor;
-    res.json({ name, email: tutorEmail, id: _id , role, ok: true, status: 200 });
+    res.json({ name, email: tutorEmail, id: _id, role, ok: true, status: 200 });
   } catch (error) {
     console.error('Error during tutor login:', error);
     res.status(500).json({ message: 'An error occurred during tutor login', ok: false, status: 500 });
