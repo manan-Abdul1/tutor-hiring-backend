@@ -21,8 +21,7 @@ const registerTutor = async (req, res) => {
 
     // Save the tutor to the database
     await tutor.save();
-
-    res.status(201).json({ message: 'Tutor registered successfully', ok: true });
+    res.status(201).json({ tutor, message: 'Tutor registered successfully', ok: true });
   } catch (error) {
     res.status(500).json({ message: 'An error occurred during tutor registration', ok: false });
   }
@@ -63,16 +62,23 @@ const getAllTeachers = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving teachers', ok: false });
   }
 };
-
-// Get Teacher By ID
+// Get Teacher By ID using query parameter
 const getTeacherById = async (req, res) => {
   try {
-    const teachers = await Tutor.findOne({ _id });
-    res.status(200).json({ teachers, message: 'Teachers retrieved successfully', ok: true });
+    const id = req.query._id;
+    const teacher = await Tutor.findOne({ _id: id });
+
+    if (!teacher) {
+      return res.status(404).json({ message: 'Teacher not found', ok: false });
+    }
+
+    res.status(200).json({ teacher, message: 'Teacher retrieved successfully', ok: true });
   } catch (error) {
-    res.status(500).json({ message: 'Error retrieving teachers', ok: false });
+    console.error('Error retrieving teacher by ID:', error);
+    res.status(500).json({ message: 'Error retrieving teacher', ok: false });
   }
 };
+
 
 // update teacher
 const updateTeacher = async (req, res) => {
