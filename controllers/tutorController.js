@@ -65,7 +65,7 @@ const getAllTeachers = async (req, res) => {
 // Get Teacher By ID using query parameter
 const getTeacherById = async (req, res) => {
   try {
-    const id = req.query._id;
+    const id = req.query.id;
     const teacher = await Tutor.findOne({ _id: id });
 
     if (!teacher) {
