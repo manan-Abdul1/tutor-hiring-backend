@@ -103,7 +103,6 @@ const tutorSchema = new mongoose.Schema({
     type: String,
     required: false,
     default: function () {
-      // Check the gender and set the default image URL accordingly
       if (this.gender === 'male') {
         return 'https://thetutors.pk/avatars/user.png';
       } else {
