@@ -91,10 +91,26 @@ const tutorSchema = new mongoose.Schema({
     type: String,
     default: 'tutor',
   },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  rating: {
+    type: Number,
+    default: 5,
+  },
   profileImageUrl: {
-    type : String ,
-    required: false
-  }
+    type: String,
+    required: false,
+    default: function () {
+      // Check the gender and set the default image URL accordingly
+      if (this.gender === 'male') {
+        return 'https://thetutors.pk/avatars/user.png';
+      } else {
+        return 'https://thetutors.pk/avatars/female-user.png';
+      }
+    },
+  },
 });
 
 const Tutor = mongoose.model('Tutor', tutorSchema);
