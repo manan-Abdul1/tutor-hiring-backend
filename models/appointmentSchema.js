@@ -17,16 +17,18 @@ const appointmentSchema = new mongoose.Schema({
         type: String,
     },
     createdAt: {
-        type: String,
-        // ISODate("timestamp"),
+        type: Date, 
+        required: true,
+        default: Date.now, 
     },
     updatedAt: {
-        type: String,
-        // ISODate("timestamp"),
+        type: Date, 
+        required: true,
+        default: Date.now, 
     }
 });
 
 // Create a model based on the schema
-const appointmentData = mongoose.model('Appointments', appointmentSchema);
+const Appointment = mongoose.model('Appointment', appointmentSchema);
 
-module.exports = appointmentData;
+module.exports = Appointment;
