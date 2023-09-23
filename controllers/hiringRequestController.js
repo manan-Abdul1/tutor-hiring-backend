@@ -4,13 +4,13 @@ const HiringRequest = require('../models/hiringRequestSchema');
 const createHiringRequest = async (req, res) => {
   try {
     const { studentId, teacherId, location, timing, topic, payment } = req.body;
-
+    console.log(req.body,'req')
     // Create a new hiring request
     const newRequest = new HiringRequest({
       studentId,
       teacherId,
       location,
-      timing,
+      timing: new Date(timing),
       topic,
       payment,
       status: 'pending',
