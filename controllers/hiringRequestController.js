@@ -1,4 +1,4 @@
-const HiringRequest = require('../models/appointmentSchema'); 
+const HiringRequest = require('../models/hiringRequestSchema'); 
 
 // Handle the POST request to create a new hiring request
 const createHiringRequest = async (req, res) => {

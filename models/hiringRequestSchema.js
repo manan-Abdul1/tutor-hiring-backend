@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const appointmentSchema = new mongoose.Schema({
+const hiringRequestSchema = new mongoose.Schema({
     studentId: {
         type: String,
         required: true,
@@ -33,6 +33,6 @@ const appointmentSchema = new mongoose.Schema({
 });
 
 // Create a model based on the schema
-const Appointment = mongoose.model('Appointment', appointmentSchema);
+const hiringRequestData = mongoose.model('Requests', hiringRequestSchema);
 
-module.exports = Appointment;
+module.exports = hiringRequestData;
