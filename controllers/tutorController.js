@@ -32,7 +32,6 @@ const registerTutor = async (req, res) => {
 const tutorsLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     // Check if the tutor exists
     const existingTutor = await Tutor.findOne({ email });
     // If tutor is not found, return error
