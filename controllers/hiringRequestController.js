@@ -30,10 +30,9 @@ const createHiringRequest = async (req, res) => {
 const getTeacherRequestsById = async (req, res) => {
   try {
     const teacherId = req.query.id;
-    console.log(teacherId, 'request');
 
-    const requests = await HiringRequest.find({ teacherId });
-    console.log(requests, 'request');
+    // const requests = await HiringRequest.find({ teacherId });
+    const requests = await HiringRequest.find({ teacherId }).populate('studentId');
 
     if (!requests || requests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
