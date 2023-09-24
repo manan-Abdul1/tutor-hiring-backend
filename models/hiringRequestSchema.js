@@ -7,8 +7,13 @@ const hiringRequestSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  message: {
+  topic: {
     type: String,
+    required: true,
+  },
+  payment: {
+    type: String,
+    required: true,
   },
   timing: {
     type: Date,
