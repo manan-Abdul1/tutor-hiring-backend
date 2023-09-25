@@ -1,10 +1,26 @@
 const Student = require('../models/studentSchema');
 
-// Register a new student
+const Joi = require('joi');
+
+// Define a Joi schema for student registration
+const registrationSchema = Joi.object({
+  name: Joi.string().min(2).max(50).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(8).max(20).required(),
+});
+
 const registerStudent = async (req, res) => {
   try {
     // Extract the registration data from the request body
     const { name, email, password } = req.body;
+
+    // Validate the input data against the registration schema
+    const { error } = registrationSchema.validate({ name, email, password });
+
+    // Check if validation failed
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message, ok: false });
+    }
 
     // Check if the student already exists
     const existingStudent = await Student.findOne({ email });
@@ -13,7 +29,7 @@ const registerStudent = async (req, res) => {
     }
 
     // Create a new student instance
-    const student = new Student({ name, email, password, role });
+    const student = new Student({ name, email, password });
 
     // Save the student to the database
     await student.save();
@@ -24,6 +40,32 @@ const registerStudent = async (req, res) => {
     res.status(500).json({ message: 'An error occurred during student registration', ok: false });
   }
 };
+
+
+// // Register a new student
+// const registerStudent = async (req, res) => {
+//   try {
+//     // Extract the registration data from the request body
+//     const { name, email, password } = req.body;
+
+//     // Check if the student already exists
+//     const existingStudent = await Student.findOne({ email });
+//     if (existingStudent) {
+//       return res.status(500).json({ message: 'Student already exists', ok: false });
+//     }
+
+//     // Create a new student instance
+//     const student = new Student({ name, email, password, role });
+
+//     // Save the student to the database
+//     await student.save();
+
+//     res.status(201).json({ message: 'Student registered successfully', ok: true });
+//   } catch (error) {
+//     console.error('Error registering student:', error);
+//     res.status(500).json({ message: 'An error occurred during student registration', ok: false });
+//   }
+// };
 
 // Student login
 const studentLogin = async (req, res) => {
