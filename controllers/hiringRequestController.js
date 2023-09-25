@@ -52,7 +52,10 @@ const getTeacherRequestsById = async (req, res) => {
 // Update request status by request ID and teacher ID
 const updateRequestStatus = async (req, res) => {
   try {
-    const requestId = req.params.id;
+    console.log(req.body)
+    console.log(req.query,'req.query')
+    const requestId = req.query.id;
+    console.log(requestId,'requestId')
     const { status, teacherId } = req.body;
 
     // Check if the request belongs to the teacher (you should implement this logic)
@@ -104,7 +107,32 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
   }
 };
 
+const acceptRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
 
+    // Update the request status in the database to "accepted"
+    const updatedRequest = await HiringRequest.findByIdAndUpdate(
+      requestId,
+      { status: 'accepted' },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found', ok: false });
+    }
+
+    // Optionally, you can send a response to confirm the status update
+    res.status(200).json({
+      updatedRequest,
+      message: 'Request accepted successfully',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error accepting request:', error);
+    res.status(500).json({ message: 'Error accepting request', ok: false });
+  }
+};
 
 
 
@@ -112,5 +140,6 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
 module.exports = {
   createHiringRequest,
   getTeacherRequestsById,
-  updateRequestStatus
+  updateRequestStatus,
+  acceptRequest
 };
