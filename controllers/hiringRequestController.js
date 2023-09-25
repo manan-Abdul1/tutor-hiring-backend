@@ -109,7 +109,7 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
 
 const acceptRequest = async (req, res) => {
   try {
-    const requestId = req.params.id;
+    const requestId = req.query.id;
 
     // Update the request status in the database to "accepted"
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
