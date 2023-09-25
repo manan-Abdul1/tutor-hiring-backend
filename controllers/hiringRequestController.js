@@ -166,5 +166,6 @@ module.exports = {
   createHiringRequest,
   getTeacherRequestsById,
   updateRequestStatus,
-  acceptRequest
+  acceptRequest,
+  rejectRequest
 };
