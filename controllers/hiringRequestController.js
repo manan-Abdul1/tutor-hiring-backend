@@ -49,11 +49,18 @@ const getTeacherRequestsById = async (req, res) => {
   }
 };
 
-// Update request status by request ID
+// Update request status by request ID and teacher ID
 const updateRequestStatus = async (req, res) => {
   try {
-    const requestId = req.query.id;
-    const { status } = req.body;
+    const requestId = req.params.id;
+    const { status, teacherId } = req.body;
+
+    // Check if the request belongs to the teacher (you should implement this logic)
+    const isRequestBelongsToTeacher = await checkIfRequestBelongsToTeacher(requestId, teacherId);
+
+    if (!isRequestBelongsToTeacher) {
+      return res.status(403).json({ message: 'You do not have permission to update this request', ok: false });
+    }
 
     // Update the request status in the database
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
@@ -78,10 +85,32 @@ const updateRequestStatus = async (req, res) => {
   }
 };
 
+// Check if the request belongs to the teacher
+const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
+  try {
+    // Find the request by its ID
+    const request = await HiringRequest.findById(requestId);
+
+    // If the request doesn't exist or it doesn't have the same teacherId, return false
+    if (!request || request.teacherId.toString() !== teacherId) {
+      return false;
+    }
+
+    // If the request exists and has the same teacherId, return true
+    return true;
+  } catch (error) {
+    console.error('Error checking request ownership:', error);
+    return false; // Return false in case of an error
+  }
+};
+
+
+
 
 
 
 module.exports = {
   createHiringRequest,
-  getTeacherRequestsById
+  getTeacherRequestsById,
+  updateRequestStatus
 };
