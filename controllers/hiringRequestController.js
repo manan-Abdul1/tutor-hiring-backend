@@ -48,27 +48,36 @@ const getTeacherRequestsById = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving requests', ok: false });
   }
 };
+
+// Update request status by request ID
 const updateRequestStatus = async (req, res) => {
   try {
-    const teacherId = req.query.id;
+    const requestId = req.query.id;
+    const { status } = req.body;
 
-    // const requests = await HiringRequest.find({ teacherId });
-    const requests = await HiringRequest.find({ teacherId }).populate('studentId');
+    // Update the request status in the database
+    const updatedRequest = await HiringRequest.findByIdAndUpdate(
+      requestId,
+      { status },
+      { new: true }
+    );
 
-    if (!requests || requests.length === 0) {
-      return res.status(404).json({ message: 'No requests found', ok: false });
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found', ok: false });
     }
 
+    // Optionally, you can send a response to confirm the status update
     res.status(200).json({
-      requests,
-      message: 'Requests retrieved successfully',
+      updatedRequest,
+      message: 'Request status updated successfully',
       ok: true,
     });
   } catch (error) {
-    console.error('Error retrieving teacher requests by teacherId:', error);
-    res.status(500).json({ message: 'Error retrieving requests', ok: false });
+    console.error('Error updating request status:', error);
+    res.status(500).json({ message: 'Error updating request status', ok: false });
   }
 };
+
 
 
 
