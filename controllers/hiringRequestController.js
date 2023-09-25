@@ -134,7 +134,32 @@ const acceptRequest = async (req, res) => {
   }
 };
 
+const rejectRequest = async (req, res) => {
+  try {
+    const requestId = req.params.id;
 
+    // Update the request status in the database to "rejected"
+    const updatedRequest = await HiringRequest.findByIdAndUpdate(
+      requestId,
+      { status: 'rejected' },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found', ok: false });
+    }
+
+    // Optionally, you can send a response to confirm the status update
+    res.status(200).json({
+      updatedRequest,
+      message: 'Request rejected successfully',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error rejecting request:', error);
+    res.status(500).json({ message: 'Error rejecting request', ok: false });
+  }
+};
 
 
 module.exports = {
