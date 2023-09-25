@@ -136,7 +136,7 @@ const acceptRequest = async (req, res) => {
 
 const rejectRequest = async (req, res) => {
   try {
-    const requestId = req.params.id;
+    const requestId = req.query.id;
 
     // Update the request status in the database to "rejected"
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
