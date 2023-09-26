@@ -1,4 +1,6 @@
-const HiringRequest = require('../models/hiringRequestSchema'); 
+const HiringRequest = require('../models/hiringRequestSchema');
+const Tutor = require('../models/tutorSchema');
+const { sendEmail } = require('../services/mailServices');
 
 // Handle the POST request to create a new hiring request
 const createHiringRequest = async (req, res) => {
@@ -14,12 +16,18 @@ const createHiringRequest = async (req, res) => {
       topic,
       payment,
       status: 'pending',
-      createdAt: new Date().toISOString(), 
+      createdAt: new Date().toISOString(),
     });
-
+    
     // Save the request to the database
     await newRequest.save();
+    
+    const { email } = await Tutor.findOne({ _id: teacherId });
+    const recipientEmail = email;
+    const emailSubject = 'New Hiring Request';
+    const emailMessage = 'You have a new Request';
 
+    await sendEmail(recipientEmail, emailSubject, emailMessage);
     // Respond with a success message or the newly created request
     res.status(201).json({ message: 'Hiring request created successfully', request: newRequest });
   } catch (error) {
@@ -53,9 +61,9 @@ const getTeacherRequestsById = async (req, res) => {
 const updateRequestStatus = async (req, res) => {
   try {
     console.log(req.body)
-    console.log(req.query,'req.query')
+    console.log(req.query, 'req.query')
     const requestId = req.query.id;
-    console.log(requestId,'requestId')
+    console.log(requestId, 'requestId')
     const { status, teacherId } = req.body;
 
     // Check if the request belongs to the teacher (you should implement this logic)
@@ -122,6 +130,13 @@ const acceptRequest = async (req, res) => {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
 
+    // Send an email notification to the student
+    const studentEmail = updatedRequest.studentId.email; // Replace with the actual path to the student's email
+    const emailSubject = 'Hiring Request Status Update';
+    const emailMessage = `Your hiring request has been accepted.`;
+
+    await sendEmail(studentEmail, emailSubject, emailMessage);
+
     // Optionally, you can send a response to confirm the status update
     res.status(200).json({
       updatedRequest,
@@ -148,6 +163,13 @@ const rejectRequest = async (req, res) => {
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
+
+    // Send an email notification to the student
+    const studentEmail = updatedRequest.studentId.email; // Replace with the actual path to the student's email
+    const emailSubject = 'Hiring Request Status Update';
+    const emailMessage = `Your hiring request has been rejected.`;
+
+    await sendEmail(studentEmail, emailSubject, emailMessage);
 
     // Optionally, you can send a response to confirm the status update
     res.status(200).json({
