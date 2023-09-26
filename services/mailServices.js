@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer")
 
-// Create a transporter using your email service provider's SMTP settings
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -14,7 +13,7 @@ const sendEmail = async (to, subject, message) => {
   try {
     // Send mail with defined transport object
     await transporter.sendMail({
-      from: 'privatetutorapp@gmail.com', 
+      from: 'privatetutorapp@gmail.com',
       to,
       subject,
       html: message,
@@ -25,4 +24,4 @@ const sendEmail = async (to, subject, message) => {
     console.error('Error sending email:', error);
   }
 };
-module.exports = {sendEmail}
+module.exports = { sendEmail }
