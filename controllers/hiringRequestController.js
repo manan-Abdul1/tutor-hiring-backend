@@ -1,4 +1,5 @@
 const HiringRequest = require('../models/hiringRequestSchema');
+const Student = require('../models/studentSchema');
 const Tutor = require('../models/tutorSchema');
 const { sendEmail } = require('../services/mailServices');
 
@@ -129,9 +130,15 @@ const acceptRequest = async (req, res) => {
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
+    const studentId = updatedRequest.studentId;
+    const student = await Student.findById(studentId);
 
-    // Send an email notification to the student
-    const studentEmail = updatedRequest.studentId.email; // Replace with the actual path to the student's email
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found', ok: false });
+    }
+
+    const studentEmail = student.email;
+      
     const emailSubject = 'Hiring Request Status Update';
     const emailMessage = `Your hiring request has been accepted.`;
 
