@@ -13,7 +13,7 @@ const registerStudent = async (req, res) => {
     }
 
     // Create a new student instance
-    const student = new Student({ name, email, password, role });
+    const student = new Student({ name, email, password, role:'user' });
 
     // Save the student to the database
     await student.save();
