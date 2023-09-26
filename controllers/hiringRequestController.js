@@ -8,7 +8,6 @@ const createHiringRequest = async (req, res) => {
   try {
     const { studentId, teacherId, location, timing, topic, payment } = req.body;
 
-    // Create a new hiring request
     const newRequest = new HiringRequest({
       studentId,
       teacherId,
@@ -20,7 +19,6 @@ const createHiringRequest = async (req, res) => {
       createdAt: new Date().toISOString(),
     });
     
-    // Save the request to the database
     await newRequest.save();
     
     const { email } = await Tutor.findOne({ _id: teacherId });
@@ -29,7 +27,7 @@ const createHiringRequest = async (req, res) => {
     const emailMessage = 'You have a new Request';
 
     await sendEmail(recipientEmail, emailSubject, emailMessage);
-    // Respond with a success message or the newly created request
+
     res.status(201).json({ message: 'Hiring request created successfully', request: newRequest });
   } catch (error) {
     console.error('Error creating hiring request:', error);
@@ -40,7 +38,6 @@ const getTeacherRequestsById = async (req, res) => {
   try {
     const teacherId = req.query.id;
 
-    // const requests = await HiringRequest.find({ teacherId });
     const requests = await HiringRequest.find({ teacherId }).populate('studentId');
 
     if (!requests || requests.length === 0) {
@@ -67,14 +64,12 @@ const updateRequestStatus = async (req, res) => {
     console.log(requestId, 'requestId')
     const { status, teacherId } = req.body;
 
-    // Check if the request belongs to the teacher (you should implement this logic)
     const isRequestBelongsToTeacher = await checkIfRequestBelongsToTeacher(requestId, teacherId);
 
     if (!isRequestBelongsToTeacher) {
       return res.status(403).json({ message: 'You do not have permission to update this request', ok: false });
     }
 
-    // Update the request status in the database
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
       { status },
@@ -85,7 +80,6 @@ const updateRequestStatus = async (req, res) => {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
 
-    // Optionally, you can send a response to confirm the status update
     res.status(200).json({
       updatedRequest,
       message: 'Request status updated successfully',
@@ -100,19 +94,16 @@ const updateRequestStatus = async (req, res) => {
 // Check if the request belongs to the teacher
 const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
   try {
-    // Find the request by its ID
     const request = await HiringRequest.findById(requestId);
 
-    // If the request doesn't exist or it doesn't have the same teacherId, return false
     if (!request || request.teacherId.toString() !== teacherId) {
       return false;
     }
 
-    // If the request exists and has the same teacherId, return true
     return true;
   } catch (error) {
     console.error('Error checking request ownership:', error);
-    return false; // Return false in case of an error
+    return false; 
   }
 };
 
@@ -120,7 +111,6 @@ const acceptRequest = async (req, res) => {
   try {
     const requestId = req.query.id;
 
-    // Update the request status in the database to "accepted"
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
       { status: 'accepted' },
@@ -144,7 +134,6 @@ const acceptRequest = async (req, res) => {
 
     await sendEmail(studentEmail, emailSubject, emailMessage);
 
-    // Optionally, you can send a response to confirm the status update
     res.status(200).json({
       updatedRequest,
       message: 'Request accepted successfully',
@@ -160,7 +149,6 @@ const rejectRequest = async (req, res) => {
   try {
     const requestId = req.query.id;
 
-    // Update the request status in the database to "rejected"
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
       { status: 'rejected' },
@@ -183,7 +171,6 @@ const rejectRequest = async (req, res) => {
 
     await sendEmail(studentEmail, emailSubject, emailMessage);
 
-    // Optionally, you can send a response to confirm the status update
     res.status(200).json({
       updatedRequest,
       message: 'Request rejected successfully',
