@@ -184,39 +184,22 @@ const rejectRequest = async (req, res) => {
 
 const getAcceptedRequest = async (req, res) => {
   try {
-    const requestId = req.query.id;
+    const teacherId = req.query.id;
 
-    const updatedRequest = await HiringRequest.findByIdAndUpdate(
-      requestId,
-      { status: 'accepted' },
-      { new: true }
-    );
-
-    if (!updatedRequest) {
-      return res.status(404).json({ message: 'Request not found', ok: false });
+    const requests = await HiringRequest.find({ teacherId });
+    const acceptedRequests = requests.filter(req=>req.status==="accepted");
+    if (!acceptedRequests  || acceptedRequests.length === 0) {
+      return res.status(404).json({ message: 'No requests found', ok: false });
     }
-    const studentId = updatedRequest.studentId;
-    const student = await Student.findById(studentId);
-
-    if (!student) {
-      return res.status(404).json({ message: 'Student not found', ok: false });
-    }
-
-    const studentEmail = student.email;
-      
-    const emailSubject = 'Hiring Request Status Update';
-    const emailMessage = `Your hiring request has been accepted.`;
-
-    await sendEmail(studentEmail, emailSubject, emailMessage);
 
     res.status(200).json({
-      updatedRequest,
-      message: 'Request accepted successfully',
+      acceptedRequests,
+      message: 'Requests retrieved successfully',
       ok: true,
     });
   } catch (error) {
-    console.error('Error accepting request:', error);
-    res.status(500).json({ message: 'Error accepting request', ok: false });
+    console.error('Error retrieving teacher requests by teacherId:', error);
+    res.status(500).json({ message: 'Error retrieving requests', ok: false });
   }
 };
 module.exports = {
