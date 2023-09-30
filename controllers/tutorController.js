@@ -4,7 +4,6 @@ const Tutor = require('../models/tutorSchema');
 const registerTutor = async (req, res) => {
   try {
     const { email, password, confirmPassword } = req.body;
-
     // Check if the tutor with the same email already exists
     const existingTutor = await Tutor.findOne({ email });
     if (existingTutor) {
@@ -18,12 +17,13 @@ const registerTutor = async (req, res) => {
 
     // Create a new tutor
     const tutor = new Tutor({ ...req.body, confirmPassword: undefined });
-
+    console.log(tutor,'tutor')
     // Save the tutor to the database
     await tutor.save();
     res.status(201).json({ tutor, message: 'Tutor registered successfully', ok: true });
   } catch (error) {
-    res.status(500).json({ message: 'An error occurred during tutor registration', ok: false });
+    console.log(error,'error')
+    res.status(500).json({ message: error, ok: false });
   }
 };
 
