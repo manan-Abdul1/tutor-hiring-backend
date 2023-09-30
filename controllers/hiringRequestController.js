@@ -26,7 +26,7 @@ const createHiringRequest = async (req, res) => {
 
     // Create a notification for the teacher
     const notification = new Notification({
-      userId: teacherId, 
+      userId: teacherId,
       message: 'You have a new hiring request',
       eventType: 'new_hiring_request',
       eventDetails: { requestId: newRequest._id },
