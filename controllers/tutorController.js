@@ -1,31 +1,85 @@
 const Tutor = require('../models/tutorSchema');
+const Joi = require('joi');
 
-//Register a Tutor
+const tutorRegistrationSchema = Joi.object({
+  name: Joi.string().required(),
+  phone: Joi.string().required(),
+  email: Joi.string().email().required(),
+  cnic: Joi.string().required(),
+  password: Joi.string().min(8).max(20).required(),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+  address: Joi.string().required(),
+  gender: Joi.string().valid('male', 'female').required(),
+  age: Joi.number().integer().min(18).required(),
+  timing: Joi.string().required(),
+  experience: Joi.string().required(),
+  currentTeachInstitute: Joi.string().optional(),
+  alumni: Joi.string().required(),
+  education: Joi.string().required(),
+  city: Joi.string().required(),
+  bio: Joi.string().required(),
+  classes: Joi.array().items(Joi.string()).required(),
+  subjects: Joi.array().items(Joi.string()).required(),
+  allSubjectFee: Joi.number().required(),
+  perSubjectFee: Joi.number().required(),
+  location: Joi.string().valid('physical', 'online', 'both').required(),
+  role: Joi.string().default('tutor'),
+  isVerified: Joi.boolean().default(false),
+  rating: Joi.number().default(5),
+  profileImageUrl: Joi.string().optional(),
+});
+
+// Define custom error messages for Joi validation
+const validationOptions  = {
+  abortEarly: false,
+  messages: {
+    'any.required': '{#label} is required',
+    'string.email': 'Invalid email format',
+    'string.min': '{#label} should be at least {#limit} characters',
+    'string.max': '{#label} should not exceed {#limit} characters',
+    'number.integer': '{#label} should be an integer',
+    'number.min': '{#label} should be at least {#limit}',
+    'array.base': '{#label} should be an array',
+    'array.includesRequiredBoth': 'Each item in {#label} is required',
+  },
+};
+
+
+
+
 const registerTutor = async (req, res) => {
   try {
-    const { email, password, confirmPassword } = req.body;
+    // Validate the tutor registration data against the Joi schema
+    const { error, value } = tutorRegistrationSchema.validate(req.body, validationOptions);
+
+    // Check if validation failed
+    if (error) {
+      const errorMessages = error.details.map((detail) => detail.message);
+      return res.status(400).json({ messages: errorMessages, ok: false });
+    }
 
     // Check if the tutor with the same email already exists
-    const existingTutor = await Tutor.findOne({ email });
+    const existingTutor = await Tutor.findOne({ email: value.email });
     if (existingTutor) {
       return res.status(400).json({ message: 'Tutor with the same email already exists', ok: false });
     }
 
-    // Check if the password and confirmPassword match
-    if (password !== confirmPassword) {
-      return res.status(400).json({ message: 'Password and confirmPassword do not match', ok: false });
-    }
-
     // Create a new tutor
-    const tutor = new Tutor({ ...req.body, confirmPassword: undefined });
+    const tutor = new Tutor(value);
 
     // Save the tutor to the database
     await tutor.save();
+
     res.status(201).json({ tutor, message: 'Tutor registered successfully', ok: true });
   } catch (error) {
+    // Handle other errors (e.g., database errors)
     res.status(500).json({ message: 'An error occurred during tutor registration', ok: false });
   }
 };
+
+
+module.exports = { registerTutor, tutorRegistrationSchema, validationOptions };
+
 
 
 //Login
