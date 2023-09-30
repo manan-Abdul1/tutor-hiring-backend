@@ -145,6 +145,17 @@ const acceptRequest = async (req, res) => {
 
     const studentEmail = student.email;
 
+    // Create a new notification for the student
+    const newNotification = new Notification({
+      userId: studentId, // Student's ID
+      message: 'Your hiring request has been accepted.', // Notification message
+      createdAt: new Date().toISOString(), // Timestamp
+    });
+
+    // Save the new notification to the database
+    await newNotification.save();
+
+    // Send an email to the student
     const emailSubject = 'Hiring Request Status Update';
     const emailMessage = `Your hiring request has been accepted.`;
 
