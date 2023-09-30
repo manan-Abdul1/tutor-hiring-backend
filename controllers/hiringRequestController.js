@@ -1,4 +1,5 @@
 const HiringRequest = require('../models/hiringRequestSchema');
+const Notification = require('../models/notificationSchema');
 const Student = require('../models/studentSchema');
 const Tutor = require('../models/tutorSchema');
 const { sendEmail } = require('../services/mailServices');
@@ -8,6 +9,7 @@ const createHiringRequest = async (req, res) => {
   try {
     const { studentId, teacherId, location, timing, topic, payment } = req.body;
 
+    // Create a new hiring request
     const newRequest = new HiringRequest({
       studentId,
       teacherId,
@@ -18,13 +20,26 @@ const createHiringRequest = async (req, res) => {
       status: 'pending',
       createdAt: new Date().toISOString(),
     });
-    
+
+    // Save the hiring request to the database
     await newRequest.save();
-    
+
+    // Create a notification for the teacher
+    const notification = new Notification({
+      userId: teacherId, 
+      message: 'You have a new hiring request',
+      eventType: 'new_hiring_request',
+      eventDetails: { requestId: newRequest._id },
+    });
+
+    // Save the notification to the database
+    await notification.save();
+
+    // Send an email notification to the teacher (optional)
     const { email } = await Tutor.findOne({ _id: teacherId });
     const recipientEmail = email;
     const emailSubject = 'New Hiring Request';
-    const emailMessage = 'You have a new Request';
+    const emailMessage = 'You have a new hiring request';
 
     await sendEmail(recipientEmail, emailSubject, emailMessage);
 
@@ -34,6 +49,7 @@ const createHiringRequest = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 const getTeacherRequestsById = async (req, res) => {
   try {
     const teacherId = req.query.id;
@@ -103,7 +119,7 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
     return true;
   } catch (error) {
     console.error('Error checking request ownership:', error);
-    return false; 
+    return false;
   }
 };
 
@@ -128,7 +144,7 @@ const acceptRequest = async (req, res) => {
     }
 
     const studentEmail = student.email;
-      
+
     const emailSubject = 'Hiring Request Status Update';
     const emailMessage = `Your hiring request has been accepted.`;
 
@@ -165,7 +181,7 @@ const rejectRequest = async (req, res) => {
       return res.status(404).json({ message: 'Student not found', ok: false });
     }
 
-    const studentEmail = student.email; 
+    const studentEmail = student.email;
     const emailSubject = 'Hiring Request Status Update';
     const emailMessage = `Your hiring request has been rejected.`;
 
@@ -187,8 +203,8 @@ const getAcceptedRequest = async (req, res) => {
     const teacherId = req.query.id;
 
     const requests = await HiringRequest.find({ teacherId });
-    const acceptedRequests = requests.filter(req=>req.status==="accepted");
-    if (!acceptedRequests  || acceptedRequests.length === 0) {
+    const acceptedRequests = requests.filter(req => req.status === "accepted");
+    if (!acceptedRequests || acceptedRequests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
     }
 
