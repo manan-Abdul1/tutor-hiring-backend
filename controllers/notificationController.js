@@ -19,9 +19,16 @@ const createNotification = async (req, res) => {
   // Get notifications by user ID
   const getNotificationsByUserId = async (req, res) => {
     try {
-      const userId = req.params.userId;
+      const userId = req.query.userId;
+      // console.log(notifications,'notification')
+
       const notifications = await Notification.find({ userId });
-      res.status(200).json(notifications);
+      console.log(notifications,'notification')
+      res.status(200).json({
+        notifications,
+        message: 'Notification retireved successfully',
+        ok: true,
+      });
     } catch (error) {
       console.error('Error fetching notifications:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -31,7 +38,7 @@ const createNotification = async (req, res) => {
   // Mark notification as read
   const markNotificationAsRead = async (req, res) => {
     try {
-      const notificationId = req.params.notificationId;
+      const notificationId = req.query.notificationId;
       const notification = await Notification.findById(notificationId);
       
       if (!notification) {
