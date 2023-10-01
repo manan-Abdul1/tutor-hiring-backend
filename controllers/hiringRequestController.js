@@ -136,6 +136,7 @@ const acceptRequest = async (req, res) => {
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
+
     const studentId = updatedRequest.studentId;
     const student = await Student.findById(studentId);
 
@@ -149,6 +150,8 @@ const acceptRequest = async (req, res) => {
     const newNotification = new Notification({
       userId: studentId, // Student's ID
       message: 'Your hiring request has been accepted.', // Notification message
+      eventType: 'request_accepted', // Event type for request acceptance
+      eventDetails: { requestId: updatedRequest._id }, // Event details with request ID
       createdAt: new Date().toISOString(), // Timestamp
     });
 
@@ -185,6 +188,7 @@ const rejectRequest = async (req, res) => {
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
+
     const studentId = updatedRequest.studentId;
     const student = await Student.findById(studentId);
 
@@ -198,6 +202,8 @@ const rejectRequest = async (req, res) => {
     const newNotification = new Notification({
       userId: studentId, // Student's ID
       message: 'Your hiring request has been rejected.', // Notification message
+      eventType: 'request_rejected', // Event type for request rejection
+      eventDetails: { requestId: updatedRequest._id }, // Event details with request ID
       createdAt: new Date().toISOString(), // Timestamp
     });
 

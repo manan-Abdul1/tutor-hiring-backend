@@ -38,7 +38,10 @@ const createNotification = async (req, res) => {
   // Mark notification as read
   const markNotificationAsRead = async (req, res) => {
     try {
+      console.log(req.query,'req.query')
+
       const notificationId = req.query.notificationId;
+      console.log(notificationId,'notificationId')
       const notification = await Notification.findById(notificationId);
       
       if (!notification) {
@@ -58,7 +61,7 @@ const createNotification = async (req, res) => {
   // Delete a notification
   const deleteNotification = async (req, res) => {
     try {
-      const notificationId = req.params.notificationId;
+      const notificationId = req.query.notificationId;
       const notification = await Notification.findById(notificationId);
   
       if (!notification) {
@@ -73,9 +76,23 @@ const createNotification = async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   };
+  const markAllAsRead = async (req, res) => {
+    try {
+      const userId = req.body.userId; 
+     
+      await Notification.updateMany({ userId: userId }, { $set: { isRead: true } });
+  
+      res.status(200).json({ message: 'All notifications marked as read', ok: true });
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      res.status(500).json({ error: 'Internal server error', ok: false });
+    }
+  };
+  
 module.exports = {
     createNotification,
     getNotificationsByUserId,
     markNotificationAsRead,
     deleteNotification,
+    markAllAsRead
 };
