@@ -1,8 +1,16 @@
 const Tutor = require('../models/tutorSchema');
+const { tutorRegistrationValidator } = require('../validator/tutorValidator'); // Import the tutorValidator
 
-//Register a Tutor
+
+// Register a Tutor
 const registerTutor = async (req, res) => {
   try {
+    // Validate the request body against the tutorValidator schema
+    const { error } = tutorRegistrationValidator.validate(req.body);
+    if (error) {
+      return res.status(400).json({ message: error.details[0].message, ok: false });
+    }
+
     const { email, password, confirmPassword } = req.body;
 
     // Check if the tutor with the same email already exists
@@ -23,10 +31,12 @@ const registerTutor = async (req, res) => {
     await tutor.save();
     res.status(201).json({ tutor, message: 'Tutor registered successfully', ok: true });
   } catch (error) {
+    console.error('Error during tutor registration:', error);
+    console.error(error.stack);
     res.status(500).json({ message: 'An error occurred during tutor registration', ok: false });
+ 
   }
 };
-
 
 //Login
 const tutorsLogin = async (req, res) => {

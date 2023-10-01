@@ -1,19 +1,29 @@
 const Student = require('../models/studentSchema');
-
+const { userSignUpValidator } = require('../validator/studentValidation');
+const { userLoginValidator } = require('../validator/studentValidation');
 // Register a new student
 const registerStudent = async (req, res) => {
   try {
+    const { error } = userSignUpValidator.validate(req.body);
+
+    // Check for validation errors
+    if (error) {
+      // Extract specific error message for the failed field from the Joi error object
+      const errorMessage = error.details[0].message;
+      return res.status(400).json({ message: errorMessage, ok: false });
+    }
+
     // Extract the registration data from the request body
     const { name, email, password } = req.body;
 
     // Check if the student already exists
     const existingStudent = await Student.findOne({ email });
     if (existingStudent) {
-      return res.status(500).json({ message: 'Student already exists', ok: false });
+      return res.status(400).json({ message: 'Student already exists', ok: false });
     }
 
     // Create a new student instance
-    const student = new Student({ name, email, password, role:'user' });
+    const student = new Student({ name, email, password, role: 'user' });
 
     // Save the student to the database
     await student.save();
@@ -25,9 +35,18 @@ const registerStudent = async (req, res) => {
   }
 };
 
-// Student login
+
 const studentLogin = async (req, res) => {
   try {
+    const { error } = userLoginValidator.validate(req.body);
+
+    // Check for validation errors
+    if (error) {
+      // Extract specific error message for the failed field from the Joi error object
+      const errorMessage = error.details[0].message;
+      return res.status(400).json({ message: errorMessage, ok: false });
+    }
+
     const { email: studentEmail, password } = req.body;
 
     // Check if the student exists and the password is correct
@@ -36,15 +55,12 @@ const studentLogin = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password", ok: false });
     }
 
-
     res.status(200).json({ student, ok: true });
   } catch (error) {
     console.error("Error during student login:", error);
     res.status(500).json({ message: "An error occurred during student login", ok: false });
   }
 };
-
-
 // Controller function to update a student
 const updateStudent = async (req, res) => {
   try {
