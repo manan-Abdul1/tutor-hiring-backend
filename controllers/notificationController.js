@@ -38,10 +38,7 @@ const createNotification = async (req, res) => {
   // Mark notification as read
   const markNotificationAsRead = async (req, res) => {
     try {
-      console.log(req.query,'req.query')
-
       const notificationId = req.query.notificationId;
-      console.log(notificationId,'notificationId')
       const notification = await Notification.findById(notificationId);
       
       if (!notification) {
@@ -58,24 +55,19 @@ const createNotification = async (req, res) => {
     }
   };
   
-  // Delete a notification
-  const deleteNotification = async (req, res) => {
+  // Delete all notification
+  const deleteAllNotifications = async (req, res) => {
     try {
-      const notificationId = req.query.notificationId;
-      const notification = await Notification.findById(notificationId);
+      const userId = req.query.userId;
+      await Notification.deleteMany({ userId });
   
-      if (!notification) {
-        return res.status(404).json({ message: 'Notification not found', ok: false });
-      }
-  
-      await notification.remove();
-  
-      res.status(200).json({ message: 'Notification deleted successfully', ok: true });
+      res.status(200).json({ message: 'All notifications deleted successfully', ok: true });
     } catch (error) {
-      console.error('Error deleting notification:', error);
+      console.error('Error deleting notifications:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   };
+  
   const markAllAsRead = async (req, res) => {
     try {
       const userId = req.body.userId; 
@@ -93,6 +85,6 @@ module.exports = {
     createNotification,
     getNotificationsByUserId,
     markNotificationAsRead,
-    deleteNotification,
+    deleteAllNotifications,
     markAllAsRead
 };
