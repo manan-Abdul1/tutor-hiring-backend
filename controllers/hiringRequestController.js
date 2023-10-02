@@ -54,7 +54,7 @@ const getTeacherRequestsById = async (req, res) => {
   try {
     const teacherId = req.query.id;
 
-    const requests = await HiringRequest.find({ teacherId }).populate('studentId');
+    const requests = await HiringRequest.find({ teacherId }).populate('studentId', '-password');;
 
     if (!requests || requests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
@@ -232,7 +232,7 @@ const getAcceptedRequest = async (req, res) => {
   try {
     const teacherId = req.query.id;
 
-    const requests = await HiringRequest.find({ teacherId }).populate('studentId');
+    const requests = await HiringRequest.find({ teacherId }).populate('studentId', '-password');;
     const acceptedRequests = requests.filter(req => req.status === "accepted");
     if (!acceptedRequests || acceptedRequests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
