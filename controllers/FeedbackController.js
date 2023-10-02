@@ -35,6 +35,20 @@ const getFeedbackForTeacher = async (req, res) => {
       res.status(500).json({ error: 'Internal server error' });
     }
   };
+
+  // Get all feedback entries provided by a specific user
+const getFeedbackByUser = async (req, res) => {
+    try {
+      const userId = req.params.userId;
+  
+      const feedback = await Feedback.find({ userId });
+  
+      res.status(200).json(feedback);
+    } catch (error) {
+      console.error('Error fetching feedback:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
 module.exports = {
   createFeedback,
   getFeedbackForTeacher
