@@ -1,11 +1,9 @@
 const Feedback = require('../models/FeedbackSchema');
 
-// Create a new feedback entry
 const createFeedback = async (req, res) => {
   try {
     const { userId, teacherId, rating, comment } = req.body;
     
-    // Create a new feedback entry
     const feedback = new Feedback({
       userId,
       teacherId,
@@ -22,7 +20,6 @@ const createFeedback = async (req, res) => {
   }
 };
 
-// Get all feedback entries for a specific teacher
 const getFeedbackForTeacher = async (req, res) => {
     try {
       const teacherId = req.params.teacherId;
@@ -36,7 +33,6 @@ const getFeedbackForTeacher = async (req, res) => {
     }
   };
 
-  // Get all feedback entries provided by a specific user
 const getFeedbackByUser = async (req, res) => {
     try {
       const userId = req.params.userId;
@@ -50,7 +46,6 @@ const getFeedbackByUser = async (req, res) => {
     }
   };
 
-// Delete a feedback entry by ID
 const deleteFeedback = async (req, res) => {
     try {
       const feedbackId = req.params.feedbackId;
