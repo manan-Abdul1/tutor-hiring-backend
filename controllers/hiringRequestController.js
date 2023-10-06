@@ -228,7 +228,7 @@ const rejectRequest = async (req, res) => {
 };
 
 
-const getAcceptedRequest = async (req, res) => {
+const getAcceptedRequestByTutor = async (req, res) => {
   try {
     const teacherId = req.query.id;
 
@@ -248,11 +248,33 @@ const getAcceptedRequest = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving requests', ok: false });
   }
 };
+const getAcceptedRequestsByStudent = async (req, res) => {
+  try {
+    const studentId = req.query.studentId; 
+
+    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '-password');
+    const acceptedRequests = requests.filter(req => req.status === "accepted");
+
+    if (!acceptedRequests || acceptedRequests.length === 0) {
+      return res.status(404).json({ message: 'No accepted requests found', ok: false });
+    }
+
+    res.status(200).json({
+      acceptedRequests,
+      message: 'Accepted requests retrieved successfully',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error retrieving accepted requests by studentId:', error);
+    res.status(500).json({ message: 'Error retrieving accepted requests', ok: false });
+  }
+};
 module.exports = {
   createHiringRequest,
   getTeacherRequestsById,
   updateRequestStatus,
   acceptRequest,
   rejectRequest,
-  getAcceptedRequest
+  getAcceptedRequestByTutor,
+  getAcceptedRequestsByStudent
 };
