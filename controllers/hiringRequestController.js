@@ -251,6 +251,7 @@ const rejectRequest = async (req, res) => {
 const getAcceptedRequestByTutor = async (req, res) => {
   try {
     const teacherId = req.query.id;
+
     const requests = await HiringRequest.find({ teacherId }).populate('studentId', '-password');;
     const acceptedRequests = requests.filter(req => req.status === "accepted");
     if (!acceptedRequests || acceptedRequests.length === 0) {
@@ -352,14 +353,13 @@ const updateRequestStatusForUser = async (req, res) => {
   }
 };
 
-
-
 const updateRequestStatusForTutor = async (req, res) => {
   try {
     const requestId = req.query.id;
+
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
-      { status: 'completed'  },
+      { status: 'completed' },
       { new: true }
     );
 
@@ -367,13 +367,51 @@ const updateRequestStatusForTutor = async (req, res) => {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
 
+    const studentId = updatedRequest.studentId;
+    const student = await Student.findById(studentId);
+
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found', ok: false });
+    }
+
+    const studentEmail = student.email;
+
+
+    const newNotificationForStudent = new Notification({
+      userId: studentId,
+      message: 'Your hiring request has been completed.',
+      eventType: 'request_completed',
+      eventDetails: { requestId: updatedRequest._id },
+      createdAt: new Date().toISOString(),
+    });
+
+    await newNotificationForStudent.save();
+
+    const tutorId = updatedRequest.teacherId;
+    const tutor = await Tutor.findById(tutorId);
+
+    if (!tutor) {
+      return res.status(404).json({ message: 'Tutor not found', ok: false });
+    }
+
+    const tutorEmail = tutor.email;
+
+    const emailSubject = 'Hiring Request Status Update';
+    const emailMessageForStudent = 'Your hiring request has been completed.';
+    const emailMessageForTutor = 'The hiring request has been completed.';
+
+    await Promise.all([
+      sendEmail(studentEmail, emailSubject, emailMessageForStudent),
+      sendEmail(tutorEmail, emailSubject, emailMessageForTutor),
+    ]);
+
     res.status(200).json({
       updatedRequest,
       message: 'Request status updated successfully',
       ok: true,
     });
   } catch (error) {
-    console.error('Error updating request status:', error);
+    console.error('Error updating request status for tutor:', error);
     res.status(500).json({ message: 'Error updating request status', ok: false });
   }
 };
