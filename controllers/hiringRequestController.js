@@ -43,7 +43,7 @@ const createHiringRequest = async (req, res) => {
 
     await sendEmail(recipientEmail, emailSubject, emailMessage);
 
-    res.status(201).json({ message: 'Hiring request created successfully', request: newRequest });
+    res.status(201).json({ ok:true, message: 'Hiring request created successfully', request: newRequest });
   } catch (error) {
     console.error('Error creating hiring request:', error);
     res.status(500).json({ error: 'Internal server error' });
