@@ -227,7 +227,6 @@ const rejectRequest = async (req, res) => {
   }
 };
 
-
 const getAcceptedRequestByTutor = async (req, res) => {
   try {
     const teacherId = req.query.id;
@@ -248,6 +247,7 @@ const getAcceptedRequestByTutor = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving requests', ok: false });
   }
 };
+
 const getAcceptedUserRequests = async (req, res) => {
   try {
     const studentId = req.query.id; 
