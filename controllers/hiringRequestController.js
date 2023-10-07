@@ -248,11 +248,11 @@ const getAcceptedRequestByTutor = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving requests', ok: false });
   }
 };
-const getAcceptedRequestsByStudent = async (req, res) => {
+const getAcceptedUserRequests = async (req, res) => {
   try {
-    const studentId = req.query.studentId; 
+    const studentId = req.query.id; 
+    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '_id');
 
-    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '-password');
     const acceptedRequests = requests.filter(req => req.status === "accepted");
 
     if (!acceptedRequests || acceptedRequests.length === 0) {
@@ -276,5 +276,5 @@ module.exports = {
   acceptRequest,
   rejectRequest,
   getAcceptedRequestByTutor,
-  getAcceptedRequestsByStudent
+  getAcceptedUserRequests
 };
