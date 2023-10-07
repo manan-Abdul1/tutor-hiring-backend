@@ -71,6 +71,27 @@ const getTeacherRequestsById = async (req, res) => {
   }
 };
 
+const getUserRequestsById = async (req, res) => {
+  try {
+    const studentId = req.query.id;
+
+    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '_id name');;
+
+    if (!requests || requests.length === 0) {
+      return res.status(404).json({ message: 'No requests found', ok: false });
+    }
+
+    res.status(200).json({
+      requests,
+      message: 'Requests retrieved successfully',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error retrieving teacher requests by teacherId:', error);
+    res.status(500).json({ message: 'Error retrieving requests', ok: false });
+  }
+};
+
 // Update request status by request ID and teacher ID
 const updateRequestStatus = async (req, res) => {
   try {
@@ -251,7 +272,7 @@ const getAcceptedRequestByTutor = async (req, res) => {
 const getAcceptedUserRequests = async (req, res) => {
   try {
     const studentId = req.query.id; 
-    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '_id');
+    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '_id name');
 
     const acceptedRequests = requests.filter(req => req.status === "accepted");
 
@@ -294,6 +315,7 @@ const updateRequestStatusForUser = async (req, res) => {
     res.status(500).json({ message: 'Error updating request status', ok: false });
   }
 };
+
 const updateRequestStatusForTutor = async (req, res) => {
   try {
     const requestId = req.query.id;
@@ -321,9 +343,12 @@ const updateRequestStatusForTutor = async (req, res) => {
 module.exports = {
   createHiringRequest,
   getTeacherRequestsById,
+  getUserRequestsById,
   updateRequestStatus,
   acceptRequest,
   rejectRequest,
   getAcceptedRequestByTutor,
-  getAcceptedUserRequests
+  getAcceptedUserRequests,
+  updateRequestStatusForUser,
+  updateRequestStatusForTutor
 };
