@@ -269,6 +269,55 @@ const getAcceptedUserRequests = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving accepted requests', ok: false });
   }
 };
+
+const updateRequestStatusForUser = async (req, res) => {
+  try {
+    const requestId = req.query.id;
+
+    const updatedRequest = await HiringRequest.findByIdAndUpdate(
+      requestId,
+      { status: 'completed'  },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found', ok: false });
+    }
+
+    res.status(200).json({
+      updatedRequest,
+      message: 'Request status updated successfully',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error updating request status:', error);
+    res.status(500).json({ message: 'Error updating request status', ok: false });
+  }
+};
+const updateRequestStatusForTutor = async (req, res) => {
+  try {
+    const requestId = req.query.id;
+    const updatedRequest = await HiringRequest.findByIdAndUpdate(
+      requestId,
+      { status: 'completed'  },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found', ok: false });
+    }
+
+    res.status(200).json({
+      updatedRequest,
+      message: 'Request status updated successfully',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error updating request status:', error);
+    res.status(500).json({ message: 'Error updating request status', ok: false });
+  }
+};
+
 module.exports = {
   createHiringRequest,
   getTeacherRequestsById,
