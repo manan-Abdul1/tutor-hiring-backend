@@ -19,6 +19,18 @@ const hiringRequestSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  location: {
+    type: String,
+    required: false,
+  },
+  preferredLocation: {
+    type: String,
+    required: false,
+  },
+  message: {
+    type: String,
+    required: false,
+  },
   createdAt: {
     type: Date,
     required: true,
