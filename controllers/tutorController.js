@@ -55,7 +55,7 @@ const tutorsLogin = async (req, res) => {
 // get all teachers
 const getAllTeachers = async (req, res) => {
   try {
-    const teachers = await Tutor.find({ role: 'tutor' });
+    const teachers = await Tutor.find({ role: 'tutor' }).select("-password");
     res.status(200).json({ teachers, message: 'Teachers retrieved successfully', ok: true });
   } catch (error) {
     res.status(500).json({ message: 'Error retrieving teachers', ok: false });
