@@ -7,7 +7,16 @@ const { sendEmail } = require('../services/mailServices');
 // Handle the POST request to create a new hiring request
 const createHiringRequest = async (req, res) => {
   try {
-    const { studentId, teacherId, location, timing, topic, payment } = req.body;
+    const {
+      studentId,
+      teacherId,
+      location,
+      timing,
+      topic,
+      payment,
+      message,
+      preferredLocation,
+    } = req.body;
 
     // Create a new hiring request
     const newRequest = new HiringRequest({
@@ -17,6 +26,8 @@ const createHiringRequest = async (req, res) => {
       timing: new Date(timing),
       topic,
       payment,
+      message,
+      preferredLocation,
       status: 'pending',
       createdAt: new Date().toISOString(),
     });
