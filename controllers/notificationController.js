@@ -32,7 +32,7 @@ const getNotificationsByUserId = async (req, res) => {
       return res.status(400).json({ error: 'User ID is required', ok: false });
     }
 
-    const notifications = await Notification.find({ userId });
+    const notifications = await Notification.find({ userId }).sort({createdAt: -1});
 
     if (!notifications || notifications.length === 0) {
       return res.status(404).json({ message: 'No notifications found for the given user ID', ok: false });
