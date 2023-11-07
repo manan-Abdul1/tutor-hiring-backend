@@ -71,7 +71,7 @@ const getFeedbackForTeacher = async (req, res) => {
     try {
       const teacherId = req.query.id;
       
-      const feedback = await Feedback.find({ teacherId });
+      const feedback = await Feedback.find({ teacherId }).sort({createdAt: -1});
   
       res.status(200).json(feedback);
     } catch (error) {
