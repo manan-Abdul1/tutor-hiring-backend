@@ -44,7 +44,6 @@ const studentLogin = async (req, res) => {
   }
 };
 
-
 // Controller function to update a student
 const updateStudent = async (req, res) => {
   try {

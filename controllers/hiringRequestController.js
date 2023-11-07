@@ -2,7 +2,10 @@ const HiringRequest = require('../models/hiringRequestSchema');
 const Notification = require('../models/notificationSchema');
 const Student = require('../models/studentSchema');
 const Tutor = require('../models/tutorSchema');
+const generateMeetLink = require('../services/googleMeetServices');
+const { sendMeetingInvite } = require('../services/googleService');
 const { sendEmail } = require('../services/mailServices');
+const { v4: uuidv4 } = require('uuid');
 
 // Handle the POST request to create a new hiring request
 const createHiringRequest = async (req, res) => {
@@ -144,6 +147,17 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
   }
 };
 
+// const generateMeetLink = ({ meetingType }) => {
+
+//   const uniqueId = uuidv4();
+
+//   if (meetingType === 'online' || meetingType === 'both') {
+//     // Customize the link with the user's name
+//     return `https://meet.google.com/${uniqueId}`;
+//   }
+
+// };
+
 const acceptRequest = async (req, res) => {
   try {
     const requestId = req.query.id;
@@ -152,8 +166,8 @@ const acceptRequest = async (req, res) => {
       requestId,
       { status: 'accepted' },
       { new: true }
-    );
-
+    ).sort({createdAt:-1});
+    console.log(updatedRequest,'updatedRequest')
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
     }
@@ -166,22 +180,29 @@ const acceptRequest = async (req, res) => {
     }
 
     const studentEmail = student.email;
+    const meetLink = sendMeetingInvite(updatedRequest.timing,updatedRequest.updatedAt);
 
-    // Create a new notification for the student
+
+    // const meetLink = generateMeetLink(updatedRequest.timing,updatedRequest.updatedAt);
+
+    // Create a new notification for the student with the Meet link
     const newNotification = new Notification({
-      userId: studentId, // Student's ID
-      message: 'Your hiring request has been accepted.', // Notification message
-      eventType: 'request_accepted', // Event type for request acceptance
-      eventDetails: { requestId: updatedRequest._id }, // Event details with request ID
-      createdAt: new Date().toISOString(), // Timestamp
+      userId: studentId,
+      message: 'Your hiring request has been accepted.',
+      eventType: 'request_accepted',
+      eventDetails: {
+        requestId: updatedRequest._id,
+        meetingLink: meetLink, 
+      },
+      createdAt: new Date().toISOString(),
     });
 
     // Save the new notification to the database
     await newNotification.save();
 
-    // Send an email to the student
+    // Send an email to the student with the Meet link
     const emailSubject = 'Hiring Request Status Update';
-    const emailMessage = `Your hiring request has been accepted.`;
+    const emailMessage = `Your hiring request has been accepted. You can join the meeting using this link: ${meetLink}`;
 
     await sendEmail(studentEmail, emailSubject, emailMessage);
 
@@ -196,6 +217,7 @@ const acceptRequest = async (req, res) => {
   }
 };
 
+
 const rejectRequest = async (req, res) => {
   try {
     const requestId = req.query.id;
@@ -204,7 +226,7 @@ const rejectRequest = async (req, res) => {
       requestId,
       { status: 'rejected' },
       { new: true }
-    );
+    ).sort({createdAt:-1});
 
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
@@ -252,7 +274,7 @@ const getAcceptedRequestByTutor = async (req, res) => {
   try {
     const teacherId = req.query.id;
 
-    const requests = await HiringRequest.find({ teacherId }).populate('studentId', '-password');;
+    const requests = await HiringRequest.find({ teacherId }).populate('studentId', '-password').sort({createdAt:-1});
     const acceptedRequests = requests.filter(req => req.status === "accepted");
     if (!acceptedRequests || acceptedRequests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
@@ -272,7 +294,7 @@ const getAcceptedRequestByTutor = async (req, res) => {
 const getAcceptedUserRequests = async (req, res) => {
   try {
     const studentId = req.query.id; 
-    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '_id name');
+    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '_id name').sort({createdAt:-1});
 
     const acceptedRequests = requests.filter(req => req.status === "accepted");
 
@@ -299,7 +321,7 @@ const updateRequestStatusForUser = async (req, res) => {
       requestId,
       { status: 'completed' },
       { new: true }
-    );
+    ).sort({createdAt:-1});
 
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
@@ -361,7 +383,7 @@ const updateRequestStatusForTutor = async (req, res) => {
       requestId,
       { status: 'completed' },
       { new: true }
-    );
+    ).sort({createdAt:-1});
 
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Request not found', ok: false });
