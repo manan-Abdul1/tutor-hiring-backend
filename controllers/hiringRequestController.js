@@ -65,7 +65,9 @@ const getTeacherRequestsById = async (req, res) => {
   try {
     const teacherId = req.query.id;
 
-    const requests = await HiringRequest.find({ teacherId }).populate('studentId', '-password').sort({createdAt:-1});
+    const requests = await HiringRequest.find({ teacherId })
+      .populate("studentId", "-password")
+      .sort({ createdAt: -1 });
 
     if (!requests || requests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
@@ -86,7 +88,9 @@ const getUserRequestsById = async (req, res) => {
   try {
     const studentId = req.query.id;
 
-    const requests = await HiringRequest.find({ studentId }).populate('teacherId', '_id name');;
+    const requests = await HiringRequest.find({ studentId })
+      .populate("teacherId", "_id name")
+      .sort({ createdAt: -1 });
 
     if (!requests || requests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
