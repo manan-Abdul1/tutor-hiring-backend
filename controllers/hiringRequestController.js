@@ -267,7 +267,9 @@ const getAcceptedRequestByTutor = async (req, res) => {
   try {
     const teacherId = req.query.id;
 
-    const requests = await HiringRequest.find({ teacherId }).populate('studentId', '-password');
+    const requests = await HiringRequest.find({ teacherId })
+      .populate("studentId", "-password")
+      .sort({ createdAt: -1 });
     const acceptedRequests = requests.filter(req => req.status === "accepted");
     if (!acceptedRequests || acceptedRequests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
