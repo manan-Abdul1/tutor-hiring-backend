@@ -1,4 +1,5 @@
 const Tutor = require('../models/tutorSchema');
+const bcrypt = require('bcrypt');
 
 //Register a Tutor
 const registerTutor = async (req, res) => {
@@ -14,9 +15,15 @@ const registerTutor = async (req, res) => {
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Password and confirmPassword do not match', ok: false });
     }
+    
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
     // Create a new tutor
-    const tutor = new Tutor({ ...req.body, confirmPassword: undefined });
+    const tutor = new Tutor({
+      ...req.body,
+      password: hashedPassword,
+      confirmPassword: undefined,
+    });
     console.log(tutor,'tutor')
     // Save the tutor to the database
     await tutor.save();
