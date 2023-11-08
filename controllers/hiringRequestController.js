@@ -90,7 +90,7 @@ const getUserRequestsById = async (req, res) => {
 
     const requests = await HiringRequest.find({ studentId })
       .populate("teacherId", "_id name")
-      .sort({ createdAt: -1 });
+      .sort({ updatedAt: -1 });
 
     if (!requests || requests.length === 0) {
       return res.status(404).json({ message: 'No requests found', ok: false });
