@@ -1,4 +1,5 @@
 const Student = require('../models/studentSchema');
+const bcrypt = require('bcrypt');
 
 // Register a new student
 const registerStudent = async (req, res) => {
@@ -11,9 +12,15 @@ const registerStudent = async (req, res) => {
     if (existingStudent) {
       return res.status(500).json({ message: 'Student already exists', ok: false });
     }
+    const hashedPassword = await bcrypt.hash(password, 10); 
 
     // Create a new student instance
-    const student = new Student({ name, email, password, role:'user' });
+    const student = new Student({
+      name,
+      email,
+      password: hashedPassword,
+      role: "user",
+    });
 
     // Save the student to the database
     await student.save();
