@@ -37,19 +37,34 @@ const studentLogin = async (req, res) => {
   try {
     const { email: studentEmail, password } = req.body;
 
-    // Check if the student exists and the password is correct
+    // Check if the student exists
     const student = await Student.findOne({ email: studentEmail });
-    if (!student || student.password !== password) {
-      return res.status(401).json({ message: "Invalid email or password", ok: false });
+    
+    if (!student) {
+      return res.status(401).json({ message: "Email doesn't exist!", ok: false });
     }
 
+    if (password !== student.password) {
+      return res.status(401).json({ message: "Password doesn't match", ok: false });
+    }
 
-    res.status(200).json({ student, ok: true });
+    // Verify the provided password with the hashed password stored in the database
+    // const passwordMatch = await bcrypt.compare(password, student.password);
+
+    // if (!passwordMatch) {
+    //   return res.status(401).json({ message: "Password doesn't match", ok: false });
+    // }
+
+    // Password is correct, so exclude it from the response
+    const { password: omit, ...returningStudentData } = student.toObject();
+
+    res.status(200).json({ student: returningStudentData, ok: true });
   } catch (error) {
     console.error("Error during student login:", error);
     res.status(500).json({ message: "An error occurred during student login", ok: false });
   }
 };
+
 
 
 // Controller function to update a student
