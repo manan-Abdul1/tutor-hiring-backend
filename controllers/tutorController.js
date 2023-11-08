@@ -15,7 +15,7 @@ const registerTutor = async (req, res) => {
     if (password !== confirmPassword) {
       return res.status(400).json({ message: 'Password and confirmPassword do not match', ok: false });
     }
-    
+
     const hashedPassword = await bcrypt.hash(password, 10); 
 
     // Create a new tutor
@@ -50,6 +50,11 @@ const tutorsLogin = async (req, res) => {
     if (password !== existingTutor.password) {
       return res.status(401).json({ message: 'Invalid email or password', ok: false });
     }
+    // const passwordMatch = await bcrypt.compare(password, existingTutor.password);
+
+    // if (!passwordMatch) {
+    //   return res.status(401).json({ message: 'Invalid email or password', ok: false });
+    // }
     const returningTutorData = await Tutor.findOne({ email }).select('-password');
     // Return the tutor details
     res.json({ tutor:returningTutorData, ok: true });
