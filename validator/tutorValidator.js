@@ -144,6 +144,30 @@ const tutorRegistrationValidator = Joi.object({
   // Add more fields if necessary
 });
 
+const tutorLoginValidator = Joi.object({
+  email: Joi.string()
+    .email({
+      minDomainSegments: 2,
+      tlds: { allow: false },
+    })
+    .required()
+    .label('Email')
+    .messages({
+      'string.empty': 'Email is not allowed to be empty',
+      'string.email': 'Email entered must be a valid email',
+    }),
+  password: Joi.string()
+    .min(8)
+    .max(20)
+    .required()
+    .label('Password')
+    .messages({
+      'string.min': 'Password should be minimum 8 characters',
+      'string.max': 'Password should be maximum 20 characters',
+    }),
+});
+
 module.exports = {
   tutorRegistrationValidator,
+  tutorLoginValidator,
 };
