@@ -61,6 +61,41 @@ const tutorsLogin = async (req, res) => {
     res.status(500).json({ message: 'An error occurred during tutor login', ok: false, status: 500 });
   }
 };
+// const tutorsLogin = async (req, res) => {
+//   try {
+//     const { error } = tutorLoginValidator.validate(req.body);
+
+//     // Check for validation errors
+//     if (error) {
+//       // Extract specific error message for the failed field from the Joi error object
+//       const errorMessage = error.details[0].message;
+//       return res.status(400).json({ message: errorMessage, ok: false });
+//     }
+
+//     const { email, password } = req.body;
+
+//     // Check if the tutor exists
+//     const existingTutor = await Tutor.findOne({ email });
+
+//     // If tutor is not found, return error
+//     if (!existingTutor) {
+//       return res.status(401).json({ message: 'Tutor does not exist', ok: false });
+//     }
+
+//     // Compare the provided password with the stored password
+//     if (password !== existingTutor.password) {
+//       return res.status(401).json({ message: 'Invalid email or password', ok: false });
+//     }
+
+//     const returningTutorData = await Tutor.findOne({ email }).select('-password');
+
+//     // Return the tutor details
+//     res.json({ tutor: returningTutorData, ok: true });
+//   } catch (error) {
+//     console.error('Error during tutor login:', error);
+//     res.status(500).json({ message: 'An error occurred during tutor login', ok: false });
+//   }
+// };
 
 // get all teachers
 const getAllTeachers = async (req, res) => {
