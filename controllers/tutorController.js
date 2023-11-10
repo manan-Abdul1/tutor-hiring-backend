@@ -100,9 +100,6 @@ const updateTeacher = async (req, res) => {
   }
 };
 
-
-
-
 module.exports = {
   registerTutor,
   tutorsLogin,
