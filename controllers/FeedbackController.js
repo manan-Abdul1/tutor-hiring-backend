@@ -16,7 +16,7 @@ const createFeedback = async (req, res) => {
     }
 
     // Check if the teacher exists
-    const teacher = await Tutor.findById({ _id: teacherId });
+    const teacher = await Tutor.findById(teacherId);
     if (!teacher) {
       return res.status(404).json({ error: 'Teacher not found', ok: false });
     }
@@ -43,7 +43,7 @@ const createFeedback = async (req, res) => {
     // Create a notification
     const notification = new Notification({
       userId: teacherId,
-      message: 'You received new feedback from a student.',
+      message: `You received new feedback from ${user.name}.`,
       eventType: 'feedback',
       eventDetails: { feedbackId: feedback._id },
     });
@@ -54,7 +54,7 @@ const createFeedback = async (req, res) => {
     const { email } = teacher;
     const recipientEmail = email;
     const emailSubject = 'New Feedback Received';
-    const emailMessage = `You received new feedback from a student. Rating: ${rating}, Comment: ${comment}`;
+    const emailMessage = `Hi ${teacher.name},<br><br>You received new feedback from ${user.name}.<br>Rating: ${rating}<br>Comment: ${comment}<br><br>Best regards,<br>Private Tutor Hiring System Team`;
 
     await sendEmail(recipientEmail, emailSubject, emailMessage);
 
