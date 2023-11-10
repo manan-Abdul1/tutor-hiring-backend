@@ -48,7 +48,7 @@ const tutorsLogin = async (req, res) => {
 
     // Compare the provided password with the stored password
     if (password !== existingTutor.password) {
-      return res.status(401).json({ message: 'Invalid email or password', ok: false });
+      return res.status(401).json({ message: 'Please right the password correctly!', ok: false });
     }
     // const passwordMatch = await bcrypt.compare(password, existingTutor.password);
 
