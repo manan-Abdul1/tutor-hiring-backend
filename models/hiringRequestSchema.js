@@ -31,6 +31,11 @@ const hiringRequestSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  videoId: {
+    type: String,
+    default: "",
+    required: false
+  },
   createdAt: {
     type: Date,
     required: true,
