@@ -162,10 +162,11 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
 const acceptRequest = async (req, res) => {
   try {
     const requestId = req.query.id;
+    const videoId = req.body.videoId;
 
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
-      { status: 'accepted' },
+      { status: 'accepted', videoId:videoId },
       { new: true }
     );
 
