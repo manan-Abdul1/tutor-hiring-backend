@@ -166,7 +166,7 @@ const acceptRequest = async (req, res) => {
 
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
-      { status: 'accepted', videoId:videoId },
+      { status: 'accepted', videoId: videoId },
       { new: true }
     );
 
