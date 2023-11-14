@@ -8,19 +8,18 @@ const initSocket = (server) => {
     },
   });
 
-  const activeUsers = {};
-
+  // Use socket.rooms instead of activeUsers for room management
   io.on("connection", (socket) => {
-
     socket.on('generate-link', () => {
       socket.emit('video-link', socket.id);
     });
 
     socket.on("joinRoom", (roomID) => {
       socket.join(roomID);
-      activeUsers[socket.id] = roomID;
 
-      io.to(roomID).emit("allUsers", Array.from(io.sockets.adapter.rooms.get(roomID)));
+      // Use socket.rooms instead of activeUsers
+      const rooms = Array.from(socket.rooms);
+      io.to(roomID).emit("allUsers", rooms);
     });
 
     socket.on("sendingSignal", (payload) => {
@@ -38,11 +37,13 @@ const initSocket = (server) => {
     });
 
     socket.on('disconnect', () => {
-      const roomID = activeUsers[socket.id];
-      if (roomID) {
+      // Use socket.rooms instead of activeUsers
+      const rooms = Array.from(socket.rooms);
+
+      // Handle disconnection for each room the user is in
+      rooms.forEach((roomID) => {
         io.to(roomID).emit('userDisconnected', { userId: socket.id });
-        delete activeUsers[socket.id];
-      }
+      });
     });
   });
 
