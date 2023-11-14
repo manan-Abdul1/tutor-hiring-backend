@@ -37,7 +37,7 @@ const hiringRequestSchema = new mongoose.Schema({
     required: false
   },
   isVideoEnded:{
-    type: String,
+    type: Boolean,
     default: false,
     required: false
   },
