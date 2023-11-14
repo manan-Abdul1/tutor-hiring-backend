@@ -11,6 +11,7 @@ const {
   updateRequestStatusForUser,
   updateRequestStatusForTutor,
   getUserRequestsById,
+  updateRequestVideoStatus,
 } = require("../controllers/hiringRequestController");
 
 // Define the routes for students
@@ -24,5 +25,6 @@ router.get("/getAcceptedMeetings", getAcceptedRequestByTutor);
 router.get("/getAcceptedUserMeetings", getAcceptedUserRequests);
 router.put("/updateRequestStatusForUser", updateRequestStatusForUser);
 router.put("/updateRequestStatusForTutor", updateRequestStatusForTutor);
+router.put("/endVideo", updateRequestVideoStatus);
 
 module.exports = router;

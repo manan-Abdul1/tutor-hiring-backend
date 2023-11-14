@@ -435,6 +435,30 @@ const updateRequestStatusForTutor = async (req, res) => {
     res.status(500).json({ message: 'Error updating request status', ok: false });
   }
 };
+const updateRequestVideoStatus = async (req, res) => {
+  try {
+    const videoId = req.query.videoId;
+
+    const updatedRequest = await HiringRequest.findOneAndUpdate(
+      { videoId },
+      { isVideoEnded: true },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found', ok: false });
+    }
+
+    res.status(200).json({
+      updatedRequest,
+      message: 'Video has been successfully ended.',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error updating request status for tutor:', error);
+    res.status(500).json({ message: 'Error updating request status', ok: false });
+  }
+};
 
 module.exports = {
   createHiringRequest,
@@ -446,5 +470,6 @@ module.exports = {
   getAcceptedRequestByTutor,
   getAcceptedUserRequests,
   updateRequestStatusForUser,
-  updateRequestStatusForTutor
+  updateRequestStatusForTutor,
+  updateRequestVideoStatus
 };
