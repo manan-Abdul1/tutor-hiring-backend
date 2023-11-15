@@ -38,7 +38,13 @@ const createHiringRequest = async (req, res) => {
     // Create a notification for the teacher
     const notification = new Notification({
       userId: teacherId,
-      message: "You have a new hiring request",
+      message: `Hi ${tutorName}\n\n,
+      You have a new hiring request from a student. Here are the details:\n
+      - Location: ${location}\n
+      - Timing: ${timing}\n
+      - Topic: ${topic}\n
+      - Payment: ${payment}\n
+      - Message: ${message}\n`,
       eventType: "new_hiring_request",
       eventDetails: { requestId: newRequest._id },
     });
@@ -223,7 +229,7 @@ const acceptRequest = async (req, res) => {
     // Create a new notification for the student
     const newNotification = new Notification({
       userId: studentId,
-      message: 'Your hiring request has been accepted.',
+      message: `Hi ${studentName},\n\nYour hiring request with ${tutorName} has been accepted.`,
       eventType: 'request_accepted',
       eventDetails: { requestId: updatedRequest._id },
       createdAt: new Date().toISOString(),
@@ -435,7 +441,7 @@ const updateRequestStatusForUser = async (req, res) => {
 
     const newNotificationForTutor = new Notification({
       userId: tutorId,
-      message: `Hi ${tutorName},<br><br>Your Tutoring Session with ${studentName} has been completed. Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`,
+      message: `Hi ${tutorName},\n\nYour Tutoring Session with ${studentName} has been completed.\n Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`,
       eventType: 'request_completed',
       eventDetails: { requestId: updatedRequest._id },
       createdAt: new Date().toISOString(),
@@ -498,7 +504,7 @@ const updateRequestStatusForTutor = async (req, res) => {
 
     const newNotificationForStudent = new Notification({
       userId: studentId,
-      message: `Hi ${studentName},<br><br>Your Tutoring Session with ${tutorName} has been completed. Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`,
+      message: `Hi ${studentName},\n\nYour Tutoring Session with ${tutorName} has been completed.\n Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`,
       eventType: 'request_completed',
       eventDetails: { requestId: updatedRequest._id },
       createdAt: new Date().toISOString(),
