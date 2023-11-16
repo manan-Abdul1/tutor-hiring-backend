@@ -192,10 +192,11 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
 const acceptRequest = async (req, res) => {
   try {
     const requestId = req.query.id;
+    const videoId = req.body.videoId;
 
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
-      { status: "accepted" },
+      { status: 'accepted', videoId: videoId },
       { new: true }
     );
 
@@ -530,6 +531,54 @@ const updateRequestStatusForTutor = async (req, res) => {
       .json({ message: "Error updating request status", ok: false });
   }
 };
+const updateRequestVideoStatus = async (req, res) => {
+  try {
+    const videoId = req.query.videoId;
+
+    const updatedRequest = await HiringRequest.findOneAndUpdate(
+      { videoId },
+      { isVideoEnded: true },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: 'Request not found', ok: false });
+    }
+
+    res.status(200).json({
+      updatedRequest,
+      message: 'Video has been successfully ended.',
+      ok: true,
+    });
+  } catch (error) {
+    console.error('Error updating request status for tutor:', error);
+    res.status(500).json({ message: 'Error updating request status', ok: false });
+  }
+};
+const checkVideoStatus = async (req, res) => {
+  try {
+    const videoId = req.query.videoId;
+
+    // Find the hiring request associated with the videoId
+    const hiringRequest = await HiringRequest.findOne({ videoId });
+    
+    // Check if the hiring request exists
+    if (!hiringRequest) {
+      return res.status(404).json({ message: 'Video not found.', ok: false });
+    }
+    
+    // Check if the video has been ended
+    if (!hiringRequest.isVideoEnded) {
+      return res.status(200).json({ message: 'Video has not been ended.', ok: true, isVideoEnded: false });
+    }
+
+    // If the video has been ended
+    res.status(200).json({ message: 'Video has been ended.', ok: true, isVideoEnded: true });
+  } catch (error) {
+    console.error('Error checking video status:', error);
+    res.status(500).json({ message: 'Error checking video status', ok: false });
+  }
+};
 
 module.exports = {
   createHiringRequest,
@@ -542,4 +591,6 @@ module.exports = {
   getAcceptedUserRequests,
   updateRequestStatusForUser,
   updateRequestStatusForTutor,
+  updateRequestVideoStatus,
+  checkVideoStatus
 };

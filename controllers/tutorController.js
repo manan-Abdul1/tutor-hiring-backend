@@ -1,4 +1,5 @@
 const Tutor = require('../models/tutorSchema');
+const bcrypt = require('bcrypt');
 
 //Register a Tutor
 const registerTutor = async (req, res) => {
@@ -15,8 +16,14 @@ const registerTutor = async (req, res) => {
       return res.status(400).json({ message: 'Password and confirmPassword do not match', ok: false });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10); 
+
     // Create a new tutor
-    const tutor = new Tutor({ ...req.body, confirmPassword: undefined });
+    const tutor = new Tutor({
+      ...req.body,
+      password: hashedPassword,
+      confirmPassword: undefined,
+    });
     console.log(tutor,'tutor')
     // Save the tutor to the database
     await tutor.save();
@@ -41,8 +48,13 @@ const tutorsLogin = async (req, res) => {
 
     // Compare the provided password with the stored password
     if (password !== existingTutor.password) {
-      return res.status(401).json({ message: 'Invalid email or password', ok: false });
+      return res.status(401).json({ message: 'Please right the password correctly!', ok: false });
     }
+    // const passwordMatch = await bcrypt.compare(password, existingTutor.password);
+
+    // if (!passwordMatch) {
+    //   return res.status(401).json({ message: 'Invalid email or password', ok: false });
+    // }
     const returningTutorData = await Tutor.findOne({ email }).select('-password');
     // Return the tutor details
     res.json({ tutor:returningTutorData, ok: true });
@@ -87,9 +99,6 @@ const updateTeacher = async (req, res) => {
     res.status(500).json({ message: 'Error retrieving teachers', ok: false });
   }
 };
-
-
-
 
 module.exports = {
   registerTutor,
