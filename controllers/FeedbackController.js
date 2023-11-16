@@ -1,9 +1,8 @@
-const Feedback = require('../models/FeedbackSchema');
-const Notification = require('../models/notificationSchema');
-const Tutor = require('../models/tutorSchema');
-const User = require('../models/studentSchema');
-const { sendEmail } = require('../services/mailServices');
-
+const Feedback = require("../models/FeedbackSchema");
+const Notification = require("../models/notificationSchema");
+const Tutor = require("../models/tutorSchema");
+const User = require("../models/studentSchema");
+const { sendEmail } = require("../services/mailServices");
 
 const createFeedback = async (req, res) => {
   try {
@@ -12,22 +11,26 @@ const createFeedback = async (req, res) => {
     // Check if the user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found', ok: false });
+      return res.status(404).json({ error: "User not found", ok: false });
     }
 
     // Check if the teacher exists
     const teacher = await Tutor.findById({ _id: teacherId });
     if (!teacher) {
-      return res.status(404).json({ error: 'Teacher not found', ok: false });
+      return res.status(404).json({ error: "Teacher not found", ok: false });
     }
 
     // Validate rating and comment
     if (rating < 1 || rating > 5) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5', ok: false });
+      return res
+        .status(400)
+        .json({ error: "Rating must be between 1 and 5", ok: false });
     }
 
-    if (comment.trim() === '') {
-      return res.status(400).json({ error: 'Comment cannot be empty', ok: false });
+    if (comment.trim() === "") {
+      return res
+        .status(400)
+        .json({ error: "Comment cannot be empty", ok: false });
     }
 
     // Create feedback
@@ -43,8 +46,8 @@ const createFeedback = async (req, res) => {
     // Create a notification
     const notification = new Notification({
       userId: teacherId,
-      message: 'You received new feedback from a student.',
-      eventType: 'feedback',
+      message: `You received new feedback from ${user.name}.`,
+      eventType: "feedback",
       eventDetails: { feedbackId: feedback._id },
     });
 
@@ -53,60 +56,60 @@ const createFeedback = async (req, res) => {
     // Send an email
     const { email } = teacher;
     const recipientEmail = email;
-    const emailSubject = 'New Feedback Received';
-    const emailMessage = `You received new feedback from a student. Rating: ${rating}, Comment: ${comment}`;
+    const emailSubject = "New Feedback Received";
+    const emailMessage = `Hi ${teacher.name},<br><br>You received new feedback from ${user.name}.<br>Rating: ${rating}<br>Comment: ${comment}<br><br>Best regards,<br>Private Tutor Hiring System Team`;
 
     await sendEmail(recipientEmail, emailSubject, emailMessage);
 
-    res.status(201).json({ message: 'Feedback Submitted!', ok: true });
+    res.status(201).json({ message: "Feedback Submitted!", ok: true });
   } catch (error) {
-    console.error('Error creating feedback:', error);
-    res.status(500).json({ error: 'Internal server error', ok: false });
+    console.error("Error creating feedback:", error);
+    res.status(500).json({ error: "Internal server error", ok: false });
   }
 };
 
-
-
 const getFeedbackForTeacher = async (req, res) => {
-    try {
-      const teacherId = req.query.id;
-      
-      const feedback = await Feedback.find({ teacherId }).sort({createdAt: -1});
-  
-      res.status(200).json(feedback);
-    } catch (error) {
-      console.error('Error fetching feedback:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+  try {
+    const teacherId = req.query.id;
+
+    const feedback = await Feedback.find({ teacherId }).sort({ createdAt: -1 });
+
+    res.status(200).json(feedback);
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 const getFeedbackByUser = async (req, res) => {
-    try {
-      const userId = req.params.userId;
-  
-      const feedback = await Feedback.find({ userId });
-  
-      res.status(200).json(feedback);
-    } catch (error) {
-      console.error('Error fetching feedback:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+  try {
+    const userId = req.params.userId;
+
+    const feedback = await Feedback.find({ userId });
+
+    res.status(200).json(feedback);
+  } catch (error) {
+    console.error("Error fetching feedback:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 const deleteFeedback = async (req, res) => {
-    try {
-      const feedbackId = req.params.feedbackId;
-  
-      await Feedback.findByIdAndDelete(feedbackId);
-  
-      res.status(200).json({ message: 'Feedback deleted successfully', ok: true });
-    } catch (error) {
-      console.error('Error deleting feedback:', error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  };
-  
+  try {
+    const feedbackId = req.params.feedbackId;
+
+    await Feedback.findByIdAndDelete(feedbackId);
+
+    res
+      .status(200)
+      .json({ message: "Feedback deleted successfully", ok: true });
+  } catch (error) {
+    console.error("Error deleting feedback:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   createFeedback,
-  getFeedbackForTeacher
+  getFeedbackForTeacher,
 };

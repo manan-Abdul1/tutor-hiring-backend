@@ -1,8 +1,8 @@
-const HiringRequest = require('../models/hiringRequestSchema');
-const Notification = require('../models/notificationSchema');
-const Student = require('../models/studentSchema');
-const Tutor = require('../models/tutorSchema');
-const { sendEmail } = require('../services/mailServices');
+const HiringRequest = require("../models/hiringRequestSchema");
+const Notification = require("../models/notificationSchema");
+const Student = require("../models/studentSchema");
+const Tutor = require("../models/tutorSchema");
+const { sendEmail } = require("../services/mailServices");
 
 // Handle the POST request to create a new hiring request
 const createHiringRequest = async (req, res) => {
@@ -28,7 +28,7 @@ const createHiringRequest = async (req, res) => {
       payment,
       message,
       preferredLocation,
-      status: 'pending',
+      status: "pending",
       createdAt: new Date().toISOString(),
     });
 
@@ -38,8 +38,14 @@ const createHiringRequest = async (req, res) => {
     // Create a notification for the teacher
     const notification = new Notification({
       userId: teacherId,
-      message: 'You have a new hiring request',
-      eventType: 'new_hiring_request',
+      message: `Hi ${tutorName}\n\n,
+      You have a new hiring request from a student. Here are the details:\n
+      - Location: ${location}\n
+      - Timing: ${timing}\n
+      - Topic: ${topic}\n
+      - Payment: ${payment}\n
+      - Message: ${message}\n`,
+      eventType: "new_hiring_request",
       eventDetails: { requestId: newRequest._id },
     });
 
@@ -47,17 +53,31 @@ const createHiringRequest = async (req, res) => {
     await notification.save();
 
     // Send an email notification to the teacher (optional)
-    const { email } = await Tutor.findOne({ _id: teacherId });
+    const { email, name: tutorName } = await Tutor.findOne({ _id: teacherId });
     const recipientEmail = email;
-    const emailSubject = 'New Hiring Request';
-    const emailMessage = 'You have a new hiring request';
+
+    const emailSubject = "New Hiring Request";
+    const emailMessage = `Hi ${tutorName},<br><br>
+    You have a new hiring request from a student. Here are the details:<br><br>
+    - Location: ${location}<br>
+    - Timing: ${timing}<br>
+    - Topic: ${topic}<br>
+    - Payment: ${payment}<br>
+    - Message: ${message}<br><br>
+    Please login to your account to respond to this request.<br><br>
+    Best regards,<br>
+    Private Tutor Hiring System`;
 
     await sendEmail(recipientEmail, emailSubject, emailMessage);
 
-    res.status(201).json({ ok:true, message: 'Hiring request created successfully', request: newRequest });
+    res.status(201).json({
+      ok: true,
+      message: "Hiring request created successfully",
+      request: newRequest,
+    });
   } catch (error) {
-    console.error('Error creating hiring request:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error creating hiring request:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -67,20 +87,21 @@ const getTeacherRequestsById = async (req, res) => {
 
     const requests = await HiringRequest.find({ teacherId })
       .populate("studentId", "-password")
+      .populate("teacherId", "_id name") // Populate the teacherId field with name
       .sort({ createdAt: -1 });
 
     if (!requests || requests.length === 0) {
-      return res.status(404).json({ message: 'No requests found', ok: false });
+      return res.status(404).json({ message: "No requests found", ok: false });
     }
 
     res.status(200).json({
       requests,
-      message: 'Requests retrieved successfully',
+      message: "Requests retrieved successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error retrieving teacher requests by teacherId:', error);
-    res.status(500).json({ message: 'Error retrieving requests', ok: false });
+    console.error("Error retrieving teacher requests by teacherId:", error);
+    res.status(500).json({ message: "Error retrieving requests", ok: false });
   }
 };
 
@@ -89,37 +110,44 @@ const getUserRequestsById = async (req, res) => {
     const studentId = req.query.id;
 
     const requests = await HiringRequest.find({ studentId })
-      .populate("teacherId", "_id name")
-      .sort({ updatedAt: -1 });
+      .populate("studentId", "-password")
+      .populate("teacherId", "_id name") // Populate the teacherId field with name
+      .sort({ createdAt: -1 });
 
     if (!requests || requests.length === 0) {
-      return res.status(404).json({ message: 'No requests found', ok: false });
+      return res.status(404).json({ message: "No requests found", ok: false });
     }
 
     res.status(200).json({
       requests,
-      message: 'Requests retrieved successfully',
+      message: "Requests retrieved successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error retrieving teacher requests by teacherId:', error);
-    res.status(500).json({ message: 'Error retrieving requests', ok: false });
+    console.error("Error retrieving teacher requests by teacherId:", error);
+    res.status(500).json({ message: "Error retrieving requests", ok: false });
   }
 };
 
 // Update request status by request ID and teacher ID
 const updateRequestStatus = async (req, res) => {
   try {
-    console.log(req.body)
-    console.log(req.query, 'req.query')
+    console.log(req.body);
+    console.log(req.query, "req.query");
     const requestId = req.query.id;
-    console.log(requestId, 'requestId')
+    console.log(requestId, "requestId");
     const { status, teacherId } = req.body;
 
-    const isRequestBelongsToTeacher = await checkIfRequestBelongsToTeacher(requestId, teacherId);
+    const isRequestBelongsToTeacher = await checkIfRequestBelongsToTeacher(
+      requestId,
+      teacherId
+    );
 
     if (!isRequestBelongsToTeacher) {
-      return res.status(403).json({ message: 'You do not have permission to update this request', ok: false });
+      return res.status(403).json({
+        message: "You do not have permission to update this request",
+        ok: false,
+      });
     }
 
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
@@ -129,17 +157,19 @@ const updateRequestStatus = async (req, res) => {
     );
 
     if (!updatedRequest) {
-      return res.status(404).json({ message: 'Request not found', ok: false });
+      return res.status(404).json({ message: "Request not found", ok: false });
     }
 
     res.status(200).json({
       updatedRequest,
-      message: 'Request status updated successfully',
+      message: "Request status updated successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error updating request status:', error);
-    res.status(500).json({ message: 'Error updating request status', ok: false });
+    console.error("Error updating request status:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating request status", ok: false });
   }
 };
 
@@ -154,7 +184,7 @@ const checkIfRequestBelongsToTeacher = async (requestId, teacherId) => {
 
     return true;
   } catch (error) {
-    console.error('Error checking request ownership:', error);
+    console.error("Error checking request ownership:", error);
     return false;
   }
 };
@@ -171,44 +201,70 @@ const acceptRequest = async (req, res) => {
     );
 
     if (!updatedRequest) {
-      return res.status(404).json({ message: 'Request not found', ok: false });
+      return res.status(404).json({ message: "Request not found", ok: false });
     }
 
     const studentId = updatedRequest.studentId;
     const student = await Student.findById(studentId);
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found', ok: false });
+      return res.status(404).json({ message: "Student not found", ok: false });
     }
 
     const studentEmail = student.email;
 
+    const tutorId = updatedRequest.teacherId;
+    const tutor = await Tutor.findById(tutorId);
+
+    if (!tutor) {
+      return res.status(404).json({ message: "Tutor not found", ok: false });
+    }
+
+    const tutorName = tutor ? tutor.name : "Unknown Tutor";
+
     // Create a new notification for the student
     const newNotification = new Notification({
-      userId: studentId, // Student's ID
-      message: 'Your hiring request has been accepted.', // Notification message
-      eventType: 'request_accepted', // Event type for request acceptance
-      eventDetails: { requestId: updatedRequest._id }, // Event details with request ID
-      createdAt: new Date().toISOString(), // Timestamp
+      userId: studentId,
+      message: `Hi ${studentName},\n\nYour hiring request with ${tutorName} has been accepted.`,
+      eventType: "request_accepted",
+      eventDetails: { requestId: updatedRequest._id },
+      createdAt: new Date().toISOString(),
     });
 
     // Save the new notification to the database
     await newNotification.save();
 
     // Send an email to the student
-    const emailSubject = 'Hiring Request Status Update';
-    const emailMessage = `Your hiring request has been accepted.`;
+    const emailSubject = "Hiring Request Status Update";
+    const emailMessage = `
+      Hi ${student.name},<br><br>
+
+      We are excited to inform you that your hiring request has been accepted!<br>
+
+      Details of the accepted request:<br>
+      - Tutor: ${tutorName}<br>
+      - Location: ${updatedRequest.location}<br>
+      - Timing: ${updatedRequest.timing}<br>
+      - Topic: ${updatedRequest.topic}<br>
+      - Payment: ${updatedRequest.payment}<br>
+      - Message: ${updatedRequest.message}<br><br>
+
+      Feel free to contact your tutor for further coordination. Thank you for using Private Tutor Hiring System.<br>
+
+      Best regards,<br>
+      Private Tutor Hiring System Team<br>
+    `;
 
     await sendEmail(studentEmail, emailSubject, emailMessage);
 
     res.status(200).json({
       updatedRequest,
-      message: 'Request accepted successfully',
+      message: "Request accepted successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error accepting request:', error);
-    res.status(500).json({ message: 'Error accepting request', ok: false });
+    console.error("Error accepting request:", error);
+    res.status(500).json({ message: "Error accepting request", ok: false });
   }
 };
 
@@ -218,49 +274,75 @@ const rejectRequest = async (req, res) => {
 
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
-      { status: 'rejected' },
+      { status: "rejected" },
       { new: true }
     );
 
     if (!updatedRequest) {
-      return res.status(404).json({ message: 'Request not found', ok: false });
+      return res.status(404).json({ message: "Request not found", ok: false });
     }
 
     const studentId = updatedRequest.studentId;
     const student = await Student.findById(studentId);
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found', ok: false });
+      return res.status(404).json({ message: "Student not found", ok: false });
     }
 
     const studentEmail = student.email;
+    const studentName = student.name; // Add this line to get the student's name
+
+    const tutorId = updatedRequest.teacherId;
+    const tutor = await Tutor.findById(tutorId);
+
+    if (!tutor) {
+      return res.status(404).json({ message: "Tutor not found", ok: false });
+    }
+
+    const tutorName = tutor.name; // Add this line to get the tutor's name
 
     // Create a new notification for the student
     const newNotification = new Notification({
-      userId: studentId, // Student's ID
-      message: 'Your hiring request has been rejected.', // Notification message
-      eventType: 'request_rejected', // Event type for request rejection
-      eventDetails: { requestId: updatedRequest._id }, // Event details with request ID
-      createdAt: new Date().toISOString(), // Timestamp
+      userId: studentId,
+      message: `Hi ${studentName},\n\nYour hiring request with ${tutorName} has been rejected.`,
+      eventType: "request_rejected",
+      eventDetails: { requestId: updatedRequest._id },
+      createdAt: new Date().toISOString(),
     });
 
     // Save the new notification to the database
     await newNotification.save();
 
     // Send an email to the student
-    const emailSubject = 'Hiring Request Status Update';
-    const emailMessage = `Your hiring request has been rejected.`;
+    const emailSubject = "Hiring Request Status Update";
+    const emailMessage = `
+      Hi ${studentName},<br><br>
+
+      We regret to inform you that your hiring request with ${tutorName} has been rejected.<br>
+
+      Request details:<br>
+      - Location: ${updatedRequest.location}<br>
+      - Timing: ${updatedRequest.timing}<br>
+      - Topic: ${updatedRequest.topic}<br>
+      - Payment: ${updatedRequest.payment}<br>
+      - Message: ${updatedRequest.message}<br><br>
+
+      Thank you for using Private Tutor Hiring System.<br><br>
+
+      Best regards,<br>
+      Private Tutor Hiring System Team<br>
+    `;
 
     await sendEmail(studentEmail, emailSubject, emailMessage);
 
     res.status(200).json({
       updatedRequest,
-      message: 'Request rejected successfully',
+      message: "Request rejected successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error rejecting request:', error);
-    res.status(500).json({ message: 'Error rejecting request', ok: false });
+    console.error("Error rejecting request:", error);
+    res.status(500).json({ message: "Error rejecting request", ok: false });
   }
 };
 
@@ -271,43 +353,51 @@ const getAcceptedRequestByTutor = async (req, res) => {
     const requests = await HiringRequest.find({ teacherId })
       .populate("studentId", "-password")
       .sort({ createdAt: -1 });
-    const acceptedRequests = requests.filter(req => req.status === "accepted");
+    const acceptedRequests = requests.filter(
+      (req) => req.status === "accepted"
+    );
     if (!acceptedRequests || acceptedRequests.length === 0) {
-      return res.status(404).json({ message: 'No requests found', ok: false });
+      return res.status(404).json({ message: "No requests found", ok: false });
     }
 
     res.status(200).json({
       acceptedRequests,
-      message: 'Requests retrieved successfully',
+      message: "Requests retrieved successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error retrieving teacher requests by teacherId:', error);
-    res.status(500).json({ message: 'Error retrieving requests', ok: false });
+    console.error("Error retrieving teacher requests by teacherId:", error);
+    res.status(500).json({ message: "Error retrieving requests", ok: false });
   }
 };
 
 const getAcceptedUserRequests = async (req, res) => {
   try {
-    const studentId = req.query.id; 
+    const studentId = req.query.id;
     const requests = await HiringRequest.find({ studentId })
       .populate("teacherId", "_id name")
       .sort({ createdAt: -1 });
 
-    const acceptedRequests = requests.filter(req => req.status === "accepted");
+    const acceptedRequests = requests.filter(
+      (req) => req.status === "accepted"
+    );
 
     if (!acceptedRequests || acceptedRequests.length === 0) {
-      return res.status(404).json({ message: 'No accepted requests found', ok: false });
+      return res
+        .status(404)
+        .json({ message: "No accepted requests found", ok: false });
     }
 
     res.status(200).json({
       acceptedRequests,
-      message: 'Accepted requests retrieved successfully',
+      message: "Accepted requests retrieved successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error retrieving accepted requests by studentId:', error);
-    res.status(500).json({ message: 'Error retrieving accepted requests', ok: false });
+    console.error("Error retrieving accepted requests by studentId:", error);
+    res
+      .status(500)
+      .json({ message: "Error retrieving accepted requests", ok: false });
   }
 };
 
@@ -317,45 +407,47 @@ const updateRequestStatusForUser = async (req, res) => {
 
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
-      { status: 'completed' },
+      { status: "completed" },
       { new: true }
     );
 
     if (!updatedRequest) {
-      return res.status(404).json({ message: 'Request not found', ok: false });
+      return res.status(404).json({ message: "Request not found", ok: false });
     }
 
-    const {studentId} = updatedRequest;
+    const { studentId } = updatedRequest;
     const student = await Student.findById(studentId);
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found', ok: false });
+      return res.status(404).json({ message: "Student not found", ok: false });
     }
 
     const studentEmail = student.email;
+    const studentName = student.name || "Unknown Student";
 
     const tutorId = updatedRequest.teacherId;
     const tutor = await Tutor.findById(tutorId);
 
     if (!tutor) {
-      return res.status(404).json({ message: 'Tutor not found', ok: false });
+      return res.status(404).json({ message: "Tutor not found", ok: false });
     }
 
     const tutorEmail = tutor.email;
+    const tutorName = tutor.name || "Unknown Tutor";
 
     const newNotificationForTutor = new Notification({
       userId: tutorId,
-      message: 'The hiring request has been completed.',
-      eventType: 'request_completed',
+      message: `Hi ${tutorName},\n\nYour Tutoring Session with ${studentName} has been completed.\n Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`,
+      eventType: "request_completed",
       eventDetails: { requestId: updatedRequest._id },
       createdAt: new Date().toISOString(),
     });
 
     await newNotificationForTutor.save();
 
-    const emailSubject = 'Hiring Request Status Update';
-    const emailMessageForStudent = 'Your hiring request has been completed.';
-    const emailMessageForTutor = 'The hiring request has been completed.';
+    const emailSubject = "Hiring Request Status Update";
+    const emailMessageForStudent = `Hi ${studentName},<br><br>Your Tutoring Session has been completed. Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`;
+    const emailMessageForTutor = `Hi ${tutorName},<br><br>Your Tutoring Session with ${studentName} has been completed. Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`;
 
     await Promise.all([
       sendEmail(studentEmail, emailSubject, emailMessageForStudent),
@@ -364,61 +456,63 @@ const updateRequestStatusForUser = async (req, res) => {
 
     res.status(200).json({
       updatedRequest,
-      message: 'Request status updated successfully',
+      message: "Request status updated successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error updating request status for user:', error);
-    res.status(500).json({ message: 'Error updating request status', ok: false });
+    console.error("Error updating request status for user:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating request status", ok: false });
   }
 };
-
 const updateRequestStatusForTutor = async (req, res) => {
   try {
     const requestId = req.query.id;
 
     const updatedRequest = await HiringRequest.findByIdAndUpdate(
       requestId,
-      { status: 'completed' },
+      { status: "completed" },
       { new: true }
     );
 
     if (!updatedRequest) {
-      return res.status(404).json({ message: 'Request not found', ok: false });
+      return res.status(404).json({ message: "Request not found", ok: false });
     }
 
     const studentId = updatedRequest.studentId;
     const student = await Student.findById(studentId);
 
     if (!student) {
-      return res.status(404).json({ message: 'Student not found', ok: false });
+      return res.status(404).json({ message: "Student not found", ok: false });
     }
 
     const studentEmail = student.email;
+    const studentName = student.name || "Unknown Student";
 
+    const tutorId = updatedRequest.teacherId;
+    const tutor = await Tutor.findById(tutorId);
+
+    if (!tutor) {
+      return res.status(404).json({ message: "Tutor not found", ok: false });
+    }
+
+    const tutorEmail = tutor.email;
+    const tutorName = tutor.name || "Unknown Tutor";
 
     const newNotificationForStudent = new Notification({
       userId: studentId,
-      message: 'Your hiring request has been completed.',
-      eventType: 'request_completed',
+      message: `Hi ${studentName},\n\nYour Tutoring Session with ${tutorName} has been completed.\n Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`,
+      eventType: "request_completed",
       eventDetails: { requestId: updatedRequest._id },
       createdAt: new Date().toISOString(),
     });
 
     await newNotificationForStudent.save();
 
-    const tutorId = updatedRequest.teacherId;
-    const tutor = await Tutor.findById(tutorId);
-
-    if (!tutor) {
-      return res.status(404).json({ message: 'Tutor not found', ok: false });
-    }
-
-    const tutorEmail = tutor.email;
-
-    const emailSubject = 'Hiring Request Status Update';
-    const emailMessageForStudent = 'Your hiring request has been completed.';
-    const emailMessageForTutor = 'The hiring request has been completed.';
+    const emailSubject = "Hiring Request Status Update";
+    const emailMessageForStudent = `Hi ${studentName},<br><br>Your Tutoring Session with ${tutorName} has been completed. Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`;
+    const emailMessageForTutor = `Hi ${tutorName},<br><br>The Tutoring Session with ${studentName} has been completed. Thank you for using our Private Tutor Hiring System. Blessings!<br><br>Best regards,<br>Private Tutor Hiring System Team`;
 
     await Promise.all([
       sendEmail(studentEmail, emailSubject, emailMessageForStudent),
@@ -427,12 +521,14 @@ const updateRequestStatusForTutor = async (req, res) => {
 
     res.status(200).json({
       updatedRequest,
-      message: 'Request status updated successfully',
+      message: "Request status updated successfully",
       ok: true,
     });
   } catch (error) {
-    console.error('Error updating request status for tutor:', error);
-    res.status(500).json({ message: 'Error updating request status', ok: false });
+    console.error("Error updating request status for tutor:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating request status", ok: false });
   }
 };
 const updateRequestVideoStatus = async (req, res) => {
