@@ -1,3 +1,4 @@
+const { createAuthorizationToken } = require('../middleware/authMiddleware');
 const Student = require('../models/studentSchema');
 const bcrypt = require('bcrypt');
 
@@ -56,9 +57,11 @@ const studentLogin = async (req, res) => {
     // }
 
     // Password is correct, so exclude it from the response
+    const token = createAuthorizationToken(student);
+
     const { password: omit, ...returningStudentData } = student.toObject();
 
-    res.status(200).json({ student: returningStudentData, ok: true });
+    res.status(200).json({ student: { ...returningStudentData, token }, ok: true });
   } catch (error) {
     console.error("Error during student login:", error);
     res.status(500).json({ message: "An error occurred during student login", ok: false });
