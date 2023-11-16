@@ -1,3 +1,4 @@
+const { createAuthorizationToken } = require('../middleware/authMiddleware');
 const Tutor = require('../models/tutorSchema');
 const bcrypt = require('bcrypt');
 
@@ -55,9 +56,12 @@ const tutorsLogin = async (req, res) => {
     // if (!passwordMatch) {
     //   return res.status(401).json({ message: 'Invalid email or password', ok: false });
     // }
-    const returningTutorData = await Tutor.findOne({ email }).select('-password');
+    
+    const { password: omit, ...returningTutorData } = existingTutor.toObject();
+
+    const token = createAuthorizationToken(returningTutorData);
     // Return the tutor details
-    res.json({ tutor:returningTutorData, ok: true });
+    res.json({ tutor: { ...returningTutorData, token }, ok: true });
   } catch (error) {
     console.error('Error during tutor login:', error);
     res.status(500).json({ message: 'An error occurred during tutor login', ok: false, status: 500 });
